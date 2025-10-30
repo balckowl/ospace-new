@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useTranslation } from "@/i18n/client";
-import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/i18n/client";
+import { authClient } from "@/lib/auth-client";
 import Header from "../lp/layout/Header";
 import { StarryBackdrop } from "../lp/shared/StarryBackdrop";
 import SectionTitle from "./shared/SectionTitle";

@@ -1,5 +1,10 @@
 "use client";
 
+// import { osNameBaseSchema } from "@/src/server/models/user.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FlagTriangleRight, Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -11,11 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/i18n/client";
 import { pubHono } from "@/lib/hono-client";
-// import { osNameBaseSchema } from "@/src/server/models/user.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FlagTriangleRight, Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
 import Header from "../lp/layout/Header";
 import { StarryBackdrop } from "../lp/shared/StarryBackdrop";
 import SectionTitle from "./shared/SectionTitle";

@@ -1,5 +1,5 @@
-import { getTranslation } from "@/i18n/server";
 import Image from "next/image";
+import { getTranslation } from "@/i18n/server";
 import SectionTitle from "../shared/SectionTitle";
 import SeparatedWave from "../shared/SeparatedWave";
 import { StarryBackdrop } from "../shared/StarryBackdrop";

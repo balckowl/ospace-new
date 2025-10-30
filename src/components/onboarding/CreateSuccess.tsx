@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useTranslation } from "@/i18n/client";
 import { Rocket } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/i18n/client";
 import Header from "../lp/layout/Header";
 import { StarryBackdrop } from "../lp/shared/StarryBackdrop";
 import SectionTitle from "./shared/SectionTitle";

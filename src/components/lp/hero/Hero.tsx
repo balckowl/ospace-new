@@ -1,14 +1,14 @@
-import { env } from "@/env";
-import { getTranslation } from "@/i18n/server";
 import { ArrowRight } from "lucide-react";
 import { Lilita_One } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { Safari } from "@/components/magicui/safari";
+import { env } from "@/env";
+import { getTranslation } from "@/i18n/server";
 import { Button } from "../../ui/button";
 import Container from "../layout/Container";
 import SeparatedWave from "../shared/SeparatedWave";
 import { StarryBackdrop } from "../shared/StarryBackdrop";
-import { Safari } from "@/components/magicui/safari";
 
 export const litteOne = Lilita_One({ subsets: ["latin"], weight: "400" });
 

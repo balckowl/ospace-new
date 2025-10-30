@@ -1,7 +1,7 @@
-import { getTranslation } from "@/i18n/server";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
+import { getTranslation } from "@/i18n/server";
 import { Button } from "../../ui/button";
 import CoreFunctions from "../core-functions/CoreFunctions";
 import Exprience from "../experience/Experience";

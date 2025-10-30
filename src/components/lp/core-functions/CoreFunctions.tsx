@@ -1,5 +1,5 @@
-import { getTranslation } from "@/i18n/server";
 import Image from "next/image";
+import { getTranslation } from "@/i18n/server";
 import { Marquee } from "../../magicui/marquee";
 import Container from "../layout/Container";
 import SectionTitle from "../shared/SectionTitle";

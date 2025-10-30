@@ -1,7 +1,7 @@
-import { getTranslation } from "@/i18n/server";
 import { ArrowRight } from "lucide-react";
 import { Lilita_One } from "next/font/google";
 import Link from "next/link";
+import { getTranslation } from "@/i18n/server";
 import { Button } from "../../ui/button";
 
 const lilitaOne = Lilita_One({ subsets: ["latin"], weight: "400" });
