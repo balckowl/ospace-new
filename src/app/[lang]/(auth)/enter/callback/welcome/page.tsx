@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import WelcomeWrapper from "@/components/onboarding/WelcomeWrapper";
@@ -18,10 +18,8 @@ export default async function Page({ params }: Props) {
     headers: await headers(),
   });
 
-  //ログインしてないのならログインページへ
   if (!session?.user?.id) return redirect("/login");
-  //OSNameが設定されているのなら、それぞれのOSへ
-  if (session.user.osName) redirect(`/os/${session.user.osName}` as any);
+  if (session.user.osName) redirect(`/os/${session.user?.osName}` as Route);
 
   return <WelcomeWrapper lang={lang} />;
 }

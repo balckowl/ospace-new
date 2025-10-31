@@ -1,4 +1,4 @@
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import VirtualDesktopTab from "@/components/os/VirtualDesktopTab";
 import { pubHono } from "@/lib/hono-client";
 

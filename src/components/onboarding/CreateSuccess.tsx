@@ -1,6 +1,7 @@
 "use client";
 
 import { Rocket } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n/client";
@@ -18,7 +19,6 @@ export default function CreateSuccess({ osName, lang }: Props) {
   const title = t("createSuccess.title", { osName });
   const desc = t("createSuccess.desc");
   const btn = t("createSuccess.btn");
-  const href = { pathname: "/os/[osName]", query: { osName } };
 
   return (
     <div>
@@ -34,7 +34,10 @@ export default function CreateSuccess({ osName, lang }: Props) {
 
               {/* Go to OS Button */}
               <Button className="mx-auto flex items-center gap-2 rounded-xl font-medium text-lg text-white transition-all duration-200">
-                <Link href={href} className="flex items-center gap-2">
+                <Link
+                  href={`/os/${encodeURIComponent(osName)}` as Route}
+                  className="flex items-center gap-2"
+                >
                   <Rocket width={15} height={15} />
                   {btn}
                 </Link>

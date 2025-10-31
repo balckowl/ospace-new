@@ -1,6 +1,4 @@
-// import LoginWrapper from "@/components/onboarding/LoginWrapper";
-
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import LoginWrapper from "@/components/onboarding/LoginWrapper";
@@ -25,8 +23,8 @@ export default async function Page({ params }: Props) {
   }
 
   if (!session.user.osName) {
-    redirect("/enter/callback/welcome" as any);
+    redirect("/enter/callback/welcome" as Route);
   }
 
-  redirect(`/os/${session.user.osName}` as any);
+  redirect(`/os/${session.user.osName}` as Route);
 }
