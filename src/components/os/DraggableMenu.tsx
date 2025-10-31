@@ -11,12 +11,15 @@ import {
 } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import type {
+  BackgroundOptionType,
+  FontOptionType,
+} from "@/server/schemas/desktop.schema";
 import { BackgroundSelector } from "./BackgroundSelector";
 import { FontSelector } from "./FontSelector";
 import { HelpSelector } from "./HelpSelector";
 import { PublicSelector } from "./PublicSelector";
 import type { HelpWindowType } from "./types";
-import type { BackgroundOptionType, FontOptionType } from "@/server/schemas/desktop.schema";
 
 const DRAG_MARGIN = 100;
 

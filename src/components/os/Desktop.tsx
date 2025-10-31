@@ -84,6 +84,7 @@ type Props = {
   ) => void;
   isEdit: boolean;
   currentUser: CurrentUserType;
+  isPanelPinned?: boolean;
 };
 
 const inter = Inter({ subsets: ["latin"] });
@@ -243,6 +244,7 @@ export default function MacosDesktop({
   onDesktopUpdate,
   isEdit,
   currentUser,
+  isPanelPinned = false,
 }: Props) {
   const backgroundImg = useMemo(() => {
     return backgroundOptions.find((opt) => opt.name === desktopById.background);
@@ -2155,393 +2157,401 @@ export default function MacosDesktop({
 
   return (
     <div
-      className="relative h-[calc(100vh-30px)] overflow-hidden"
-      style={getBackgroundStyle()}
+      className={cn(
+        "relative h-screen overflow-hidden bg-white",
+        isPanelPinned && "p-3",
+      )}
     >
-      <TooltipProvider>
-        <Toaster
-          visibleToasts={1}
-          className={cn("top-0 right-0")}
-          richColors={false}
-          position="top-right"
-          style={{
-            fontWeight: "700",
-          }}
-          toastOptions={{
-            classNames: {
-              toast: "macos-toast",
-              title: "macos-title",
-            },
-          }}
-        />
-
-        <UserIcon
-          isPublic={isPublic}
-          currentUserInfo={currentUserInfo}
-          getFontStyle={getFontStyle}
-          currentFont={font}
-          osName={osName}
-        />
-
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ backgroundColor: `rgba(0, 0, 0, ${brightness})` }}
-          aria-hidden="true"
-        />
-
-        <DraggableMenu
-          onBackgroundChange={handleBackgroundChange}
-          getFontStyle={getFontStyle}
-          onFontChange={handleFontChange}
-          background={
-            background ?? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-          }
-          font={font}
-          setBackground={setBackground}
-          brightness={brightness}
-          onBrightnessChange={handleBrightnessChange}
-          currentTime={currentTime}
-          isPublic={isPublic}
-          setIsPublic={handleSetIsPublic}
-          osName={osName}
-          isEditable={isEdit}
-          setHelpWindow={setHelpWindow}
-          helpWindow={helpWindow}
-          desktopId={desktopById.id}
-        />
-
-        {/* Desktop grid */}
-        <div className="relative z-10 h-[calc(100vh)] p-8">
-          <div
-            className="mx-auto grid h-full max-w-6xl gap-0"
-            style={{
-              gridTemplateColumns: `repeat(${GRID_COLS}, 1fr)`,
-              gridTemplateRows: `repeat(${GRID_ROWS}, 1fr)`,
+      <div
+        className="relative h-full w-full overflow-hidden rounded-2xl"
+        style={getBackgroundStyle()}
+      >
+        <TooltipProvider>
+          <Toaster
+            visibleToasts={1}
+            className={cn("top-0 right-0")}
+            richColors={false}
+            duration={1000}
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast: "macos-toast",
+                title: "macos-title",
+              },
+              style: {
+                right: isPanelPinned ? "220px" : "0px",
+              },
             }}
-          >
-            {renderGrid()}
-          </div>
-        </div>
-
-        {/* Context Menu */}
-        {contextMenu.visible && (
-          <ContextMenu
-            contextMenu={contextMenu}
-            showEditDialog={showEditDialog}
-            deleteApp={deleteApp}
-            showAppUrlDialog={showAppUrlDialog}
-            showMemoNameDialog={showMemoNameDialog}
-            showFolderNameDialog={showFolderNameDialog}
-            showSelectStampDialog={showSelectStampDialog}
-            removeFromFolder={removeAppFromFolderViaContext}
           />
-        )}
 
-        {editDialog.visible && editDialog.app && (
-          <DefaultDialog
-            visible={editDialog.visible}
-            title={`Edit ${editDialog.app.type === "memo" ? "Notes" : editDialog.app.type === "folder" ? "Folder" : "App"}`}
-            onCancel={cancelEdit}
-            onSave={saveEdit}
-            dialogZIndex={nextzIndex}
-            dialogClassName="edit-dialog"
-            placeholder="Enter name..."
-            nameInput={editDialog.newName}
-            changeNameInput={changeNameEditDialog}
-            selectedColor={editDialog.newColor}
-            onColorSelect={changeColorEditDialog}
-            colorOptions={DEFAULT_DIALOG_COLORS}
-          />
-        )}
-
-        {editDialog.app && editDialog.visible && (
-          <div>
-            {editDialog.app.type === "stamp" ? (
-              <EditStampDialog
-                dialogZIndex={nextzIndex}
-                contentInput={editDialog.newContent}
-                changeContentInput={changeContentEditDialog}
-                onSave={saveEdit}
-                visible={editDialog.visible}
-                onCancel={cancelEdit}
-                formLabel="Hello!!"
-              />
-            ) : (
-              <DefaultDialog
-                visible={editDialog.visible}
-                title={`Edit ${editDialog.app.type === "memo" ? "Notes" : editDialog.app.type === "folder" ? "Folder" : "App"}`}
-                onCancel={cancelEdit}
-                onSave={saveEdit}
-                dialogZIndex={nextzIndex}
-                dialogClassName="edit-dialog"
-                placeholder="Enter name..."
-                nameInput={editDialog.newName}
-                changeNameInput={changeNameEditDialog}
-                selectedColor={editDialog.newColor}
-                onColorSelect={changeColorEditDialog}
-                colorOptions={DEFAULT_DIALOG_COLORS}
-              />
-            )}
-          </div>
-        )}
-
-        {appUrlDialog.visible && (
-          <CreateAppDialog
-            nameInput={appUrlInput}
-            dialogZIndex={nextzIndex}
-            dialogClassName="app-dialog"
-            changeNameInput={changeAppUrlInput}
-            onSave={createAppWithUrl}
-            onCancel={cancelAppCreation}
-            visible={appUrlDialog.visible}
-            saveLabel={isLoadingApp ? "Creating..." : "Save"}
-            isLoadingApp={isLoadingApp}
-            title="Create New App"
-            placeholder="https://example.com"
-          />
-        )}
-
-        {memoNameDialog.visible && (
-          <DefaultDialog
-            nameInput={memoNameInput}
-            dialogZIndex={nextzIndex}
-            dialogClassName="memo-dialog"
-            changeNameInput={changeMemoNameInput}
-            onSave={createMemoWithName}
-            onCancel={cancelMemoCreation}
-            visible={memoNameDialog.visible}
-            title="Create New Notes"
-            placeholder="Enter notes name..."
-          />
-        )}
-
-        {folderNameDialog.visible && (
-          <DefaultDialog
-            nameInput={folderNameInput}
-            dialogZIndex={nextzIndex}
-            dialogClassName="folder-dialog"
-            changeNameInput={changeFolderNameInput}
-            onSave={createFolderWithName}
-            onCancel={cancelFolderCreation}
-            visible={folderNameDialog.visible}
-            title="Create New Folder"
-            placeholder="Enter folder name..."
-          />
-        )}
-
-        {selectStampDialog.visible && (
-          <StampDialog
-            dialogZIndex={nextzIndex}
-            visible={selectStampDialog.visible}
-            onSelectStamp={onSelectStamp}
-          />
-        )}
-
-        {/* Help Window */}
-        {helpWindow.visible && (
-          <HelpWindow
-            currentFont={font}
+          <UserIcon
+            isPublic={isPublic}
+            currentUserInfo={currentUserInfo}
             getFontStyle={getFontStyle}
-            window={helpWindow}
-            onClose={() =>
-              setHelpWindow((prev) => ({
-                ...prev,
-                visible: false,
-              }))
-            }
-            // onMinimize={}
-            onBringToFront={() => {
-              bringHelpWindowToFront();
-            }}
-            onPositionChange={(position) => {
-              setHelpWindow((prev) => ({
-                ...prev,
-                position,
-              }));
-            }}
-            onSizeChange={(size) => {
-              setHelpWindow((prev) => ({
-                ...prev,
-                size,
-              }));
-            }}
+            currentFont={font}
+            osName={osName}
           />
-        )}
 
-        {/* Memo Windows */}
-        {memoWindows.map(
-          (window) =>
-            !window.isMinimized && (
-              <MemoWindow
-                key={window.id}
-                window={window}
-                isEditable={isEdit}
-                currentFont={font}
-                getFontStyle={getFontStyle}
-                onClose={() => closeMemoWindow(window.id)}
-                onContentChange={(content) =>
-                  updateMemoContent(window.id, content)
-                }
-                onBringToFront={() => bringMemoToFront(window.id)}
-                onPositionChange={(position) => {
-                  setMemoWindows((prev) =>
-                    prev.map((w) =>
-                      w.id === window.id
-                        ? {
-                            ...w,
-                            position,
-                          }
-                        : w,
-                    ),
-                  );
-                }}
-                onSizeChange={(size) => {
-                  setMemoWindows((prev) =>
-                    prev.map((w) =>
-                      w.id === window.id
-                        ? {
-                            ...w,
-                            size,
-                          }
-                        : w,
-                    ),
-                  );
-                }}
-              />
-            ),
-        )}
-
-        {/* Browser Windows */}
-        {browserWindows.map(
-          (window) =>
-            !window.isMinimized && (
-              <BrowserWindow
-                key={window.id}
-                window={window}
-                currentFont={font}
-                getFontStyle={getFontStyle}
-                onClose={() => closeBrowserWindow(window.id)}
-                onMinimize={() => minimizeBrowserWindow(window.id)}
-                onBringToFront={() => bringBrowserToFront(window.id)}
-                onPositionChange={(position) => {
-                  setBrowserWindows((prev) =>
-                    prev.map((w) =>
-                      w.id === window.id
-                        ? {
-                            ...w,
-                            position,
-                          }
-                        : w,
-                    ),
-                  );
-                }}
-                onSizeChange={(size) => {
-                  setBrowserWindows((prev) =>
-                    prev.map((w) =>
-                      w.id === window.id
-                        ? {
-                            ...w,
-                            size,
-                          }
-                        : w,
-                    ),
-                  );
-                }}
-              />
-            ),
-        )}
-
-        {/* Folder Windows */}
-        {folderWindows.map(
-          (window) =>
-            !window.isMinimized && (
-              <FolderWindow
-                key={window.id}
-                window={window}
-                currentFont={font}
-                getFontStyle={getFontStyle}
-                folderContents={folderContents.get(window.id) || []}
-                allFolderContents={folderContents}
-                apps={apps}
-                desktopBackground={background}
-                brightness={brightness}
-                isEditable={isEdit}
-                canDropExternal={canDropIntoFolderWindow}
-                onExternalDrop={() => handleDropIntoFolderWindow(window.id)}
-                onClose={() => closeFolderWindow(window.id)}
-                onMinimize={() => minimizeFolderWindow(window.id)}
-                onBringToFront={() => bringFolderToFront(window.id)}
-                onRemoveApp={(appId) => removeFromFolder(window.id, appId)}
-                onAppClick={handleAppClick}
-                onAppContextMenu={handleFolderAppContextMenu}
-                onEmptyAreaContextMenu={handleFolderEmptyAreaContextMenu}
-                onAppDragStart={(e, appId) =>
-                  handleFolderItemDragStart(e, appId, window.id)
-                }
-                onAppDragEnd={handleDragEnd}
-                onAppDrop={handleFolderItemReorderDrop}
-                onDropIntoFolder={handleDropIntoNestedFolder}
-                onPositionChange={(position) => {
-                  setFolderWindows((prev) =>
-                    prev.map((w) =>
-                      w.id === window.id
-                        ? {
-                            ...w,
-                            position,
-                          }
-                        : w,
-                    ),
-                  );
-                }}
-                onSizeChange={(size) => {
-                  setFolderWindows((prev) =>
-                    prev.map((w) =>
-                      w.id === window.id
-                        ? {
-                            ...w,
-                            size,
-                          }
-                        : w,
-                    ),
-                  );
-                }}
-                failedFavicons={failedFavicons}
-                onFaviconError={markFaviconAsFailed}
-              />
-            ),
-        )}
-
-        {showDesktopSaveBtn && isEdit && (
           <div
-            className="fixed right-6 bottom-6 text-black text-sm shadow-lg transition"
-            style={{ zIndex: 2147483647 }}
-          >
-            <div className="flex items-center gap-3 rounded-t-2xl border-b bg-white/90 px-3 py-3">
-              <CircleAlert size={17} />
-              <p className="font-bold text-sm">Unsaved changes</p>
+            className="pointer-events-none absolute inset-0"
+            style={{ backgroundColor: `rgba(0, 0, 0, ${brightness})` }}
+            aria-hidden="true"
+          />
+
+          <DraggableMenu
+            onBackgroundChange={handleBackgroundChange}
+            getFontStyle={getFontStyle}
+            onFontChange={handleFontChange}
+            background={
+              background ?? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            }
+            font={font}
+            setBackground={setBackground}
+            brightness={brightness}
+            onBrightnessChange={handleBrightnessChange}
+            currentTime={currentTime}
+            isPublic={isPublic}
+            setIsPublic={handleSetIsPublic}
+            osName={osName}
+            isEditable={isEdit}
+            setHelpWindow={setHelpWindow}
+            helpWindow={helpWindow}
+            desktopId={desktopById.id}
+          />
+
+          {/* Desktop grid */}
+          <div className="relative z-10 h-[calc(100vh)] p-8">
+            <div
+              className="mx-auto grid h-full max-w-6xl gap-0"
+              style={{
+                gridTemplateColumns: `repeat(${GRID_COLS}, 1fr)`,
+                gridTemplateRows: `repeat(${GRID_ROWS}, 1fr)`,
+              }}
+            >
+              {renderGrid()}
             </div>
-            <div className="rounded-b-2xl bg-white/85 px-3 py-3">
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-[120px] rounded-xl"
-                  onClick={handleRevertDesktopChanges}
-                >
-                  Revert
-                </Button>
-                <Button
-                  size="sm"
-                  className="w-[120px] rounded-xl"
-                  onClick={handleSaveDesktop}
-                >
-                  Save
-                </Button>
+          </div>
+
+          {/* Context Menu */}
+          {contextMenu.visible && (
+            <ContextMenu
+              contextMenu={contextMenu}
+              showEditDialog={showEditDialog}
+              deleteApp={deleteApp}
+              showAppUrlDialog={showAppUrlDialog}
+              showMemoNameDialog={showMemoNameDialog}
+              showFolderNameDialog={showFolderNameDialog}
+              showSelectStampDialog={showSelectStampDialog}
+              removeFromFolder={removeAppFromFolderViaContext}
+            />
+          )}
+
+          {editDialog.visible && editDialog.app && (
+            <DefaultDialog
+              visible={editDialog.visible}
+              title={`Edit ${editDialog.app.type === "memo" ? "Notes" : editDialog.app.type === "folder" ? "Folder" : "App"}`}
+              onCancel={cancelEdit}
+              onSave={saveEdit}
+              dialogZIndex={nextzIndex}
+              dialogClassName="edit-dialog"
+              placeholder="Enter name..."
+              nameInput={editDialog.newName}
+              changeNameInput={changeNameEditDialog}
+              selectedColor={editDialog.newColor}
+              onColorSelect={changeColorEditDialog}
+              colorOptions={DEFAULT_DIALOG_COLORS}
+            />
+          )}
+
+          {editDialog.app && editDialog.visible && (
+            <div>
+              {editDialog.app.type === "stamp" ? (
+                <EditStampDialog
+                  dialogZIndex={nextzIndex}
+                  contentInput={editDialog.newContent}
+                  changeContentInput={changeContentEditDialog}
+                  onSave={saveEdit}
+                  visible={editDialog.visible}
+                  onCancel={cancelEdit}
+                  formLabel="Hello!!"
+                />
+              ) : (
+                <DefaultDialog
+                  visible={editDialog.visible}
+                  title={`Edit ${editDialog.app.type === "memo" ? "Notes" : editDialog.app.type === "folder" ? "Folder" : "App"}`}
+                  onCancel={cancelEdit}
+                  onSave={saveEdit}
+                  dialogZIndex={nextzIndex}
+                  dialogClassName="edit-dialog"
+                  placeholder="Enter name..."
+                  nameInput={editDialog.newName}
+                  changeNameInput={changeNameEditDialog}
+                  selectedColor={editDialog.newColor}
+                  onColorSelect={changeColorEditDialog}
+                  colorOptions={DEFAULT_DIALOG_COLORS}
+                />
+              )}
+            </div>
+          )}
+
+          {appUrlDialog.visible && (
+            <CreateAppDialog
+              nameInput={appUrlInput}
+              dialogZIndex={nextzIndex}
+              dialogClassName="app-dialog"
+              changeNameInput={changeAppUrlInput}
+              onSave={createAppWithUrl}
+              onCancel={cancelAppCreation}
+              visible={appUrlDialog.visible}
+              saveLabel={isLoadingApp ? "Creating..." : "Save"}
+              isLoadingApp={isLoadingApp}
+              title="Create New App"
+              placeholder="https://example.com"
+            />
+          )}
+
+          {memoNameDialog.visible && (
+            <DefaultDialog
+              nameInput={memoNameInput}
+              dialogZIndex={nextzIndex}
+              dialogClassName="memo-dialog"
+              changeNameInput={changeMemoNameInput}
+              onSave={createMemoWithName}
+              onCancel={cancelMemoCreation}
+              visible={memoNameDialog.visible}
+              title="Create New Notes"
+              placeholder="Enter notes name..."
+            />
+          )}
+
+          {folderNameDialog.visible && (
+            <DefaultDialog
+              nameInput={folderNameInput}
+              dialogZIndex={nextzIndex}
+              dialogClassName="folder-dialog"
+              changeNameInput={changeFolderNameInput}
+              onSave={createFolderWithName}
+              onCancel={cancelFolderCreation}
+              visible={folderNameDialog.visible}
+              title="Create New Folder"
+              placeholder="Enter folder name..."
+            />
+          )}
+
+          {selectStampDialog.visible && (
+            <StampDialog
+              dialogZIndex={nextzIndex}
+              visible={selectStampDialog.visible}
+              onSelectStamp={onSelectStamp}
+            />
+          )}
+
+          {/* Help Window */}
+          {helpWindow.visible && (
+            <HelpWindow
+              currentFont={font}
+              getFontStyle={getFontStyle}
+              window={helpWindow}
+              onClose={() =>
+                setHelpWindow((prev) => ({
+                  ...prev,
+                  visible: false,
+                }))
+              }
+              // onMinimize={}
+              onBringToFront={() => {
+                bringHelpWindowToFront();
+              }}
+              onPositionChange={(position) => {
+                setHelpWindow((prev) => ({
+                  ...prev,
+                  position,
+                }));
+              }}
+              onSizeChange={(size) => {
+                setHelpWindow((prev) => ({
+                  ...prev,
+                  size,
+                }));
+              }}
+            />
+          )}
+
+          {/* Memo Windows */}
+          {memoWindows.map(
+            (window) =>
+              !window.isMinimized && (
+                <MemoWindow
+                  key={window.id}
+                  window={window}
+                  isEditable={isEdit}
+                  currentFont={font}
+                  getFontStyle={getFontStyle}
+                  onClose={() => closeMemoWindow(window.id)}
+                  onContentChange={(content) =>
+                    updateMemoContent(window.id, content)
+                  }
+                  onBringToFront={() => bringMemoToFront(window.id)}
+                  onPositionChange={(position) => {
+                    setMemoWindows((prev) =>
+                      prev.map((w) =>
+                        w.id === window.id
+                          ? {
+                              ...w,
+                              position,
+                            }
+                          : w,
+                      ),
+                    );
+                  }}
+                  onSizeChange={(size) => {
+                    setMemoWindows((prev) =>
+                      prev.map((w) =>
+                        w.id === window.id
+                          ? {
+                              ...w,
+                              size,
+                            }
+                          : w,
+                      ),
+                    );
+                  }}
+                />
+              ),
+          )}
+
+          {/* Browser Windows */}
+          {browserWindows.map(
+            (window) =>
+              !window.isMinimized && (
+                <BrowserWindow
+                  key={window.id}
+                  window={window}
+                  currentFont={font}
+                  getFontStyle={getFontStyle}
+                  onClose={() => closeBrowserWindow(window.id)}
+                  onMinimize={() => minimizeBrowserWindow(window.id)}
+                  onBringToFront={() => bringBrowserToFront(window.id)}
+                  onPositionChange={(position) => {
+                    setBrowserWindows((prev) =>
+                      prev.map((w) =>
+                        w.id === window.id
+                          ? {
+                              ...w,
+                              position,
+                            }
+                          : w,
+                      ),
+                    );
+                  }}
+                  onSizeChange={(size) => {
+                    setBrowserWindows((prev) =>
+                      prev.map((w) =>
+                        w.id === window.id
+                          ? {
+                              ...w,
+                              size,
+                            }
+                          : w,
+                      ),
+                    );
+                  }}
+                />
+              ),
+          )}
+
+          {/* Folder Windows */}
+          {folderWindows.map(
+            (window) =>
+              !window.isMinimized && (
+                <FolderWindow
+                  key={window.id}
+                  window={window}
+                  currentFont={font}
+                  getFontStyle={getFontStyle}
+                  folderContents={folderContents.get(window.id) || []}
+                  allFolderContents={folderContents}
+                  apps={apps}
+                  desktopBackground={background}
+                  brightness={brightness}
+                  isEditable={isEdit}
+                  canDropExternal={canDropIntoFolderWindow}
+                  onExternalDrop={() => handleDropIntoFolderWindow(window.id)}
+                  onClose={() => closeFolderWindow(window.id)}
+                  onMinimize={() => minimizeFolderWindow(window.id)}
+                  onBringToFront={() => bringFolderToFront(window.id)}
+                  onRemoveApp={(appId) => removeFromFolder(window.id, appId)}
+                  onAppClick={handleAppClick}
+                  onAppContextMenu={handleFolderAppContextMenu}
+                  onEmptyAreaContextMenu={handleFolderEmptyAreaContextMenu}
+                  onAppDragStart={(e, appId) =>
+                    handleFolderItemDragStart(e, appId, window.id)
+                  }
+                  onAppDragEnd={handleDragEnd}
+                  onAppDrop={handleFolderItemReorderDrop}
+                  onDropIntoFolder={handleDropIntoNestedFolder}
+                  onPositionChange={(position) => {
+                    setFolderWindows((prev) =>
+                      prev.map((w) =>
+                        w.id === window.id
+                          ? {
+                              ...w,
+                              position,
+                            }
+                          : w,
+                      ),
+                    );
+                  }}
+                  onSizeChange={(size) => {
+                    setFolderWindows((prev) =>
+                      prev.map((w) =>
+                        w.id === window.id
+                          ? {
+                              ...w,
+                              size,
+                            }
+                          : w,
+                      ),
+                    );
+                  }}
+                  failedFavicons={failedFavicons}
+                  onFaviconError={markFaviconAsFailed}
+                />
+              ),
+          )}
+
+          {showDesktopSaveBtn && isEdit && (
+            <div
+              className={`fixed ${isPanelPinned ? "right-[calc(220px+24px)]" : "right-6"} bottom-6 text-black text-sm shadow-lg transition`}
+              style={{ zIndex: 2147483647 }}
+            >
+              <div className="flex items-center gap-3 rounded-t-2xl border-b bg-white/90 px-3 py-3">
+                <CircleAlert size={17} />
+                <p className="font-bold text-sm">Unsaved changes</p>
+              </div>
+              <div className="rounded-b-2xl bg-white/85 px-3 py-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-[120px] rounded-xl"
+                    onClick={handleRevertDesktopChanges}
+                  >
+                    Revert
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="w-[120px] rounded-xl"
+                    onClick={handleSaveDesktop}
+                  >
+                    Save
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </TooltipProvider>
+          )}
+        </TooltipProvider>
+      </div>
     </div>
   );
 }

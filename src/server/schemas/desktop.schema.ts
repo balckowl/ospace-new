@@ -247,3 +247,5 @@ export const CreateDesktopInput = v.pick(DesktopSchema, ["name"]);
 export const VisibilityInput = v.pick(DesktopSchema, ["id", "isPublic"]);
 export const BackgroundInput = v.pick(DesktopSchema, ["id", "background"]);
 export const FontInput = v.pick(DesktopSchema, ["id", "font"]);
+export const DesktopId = v.pick(DesktopSchema, ["id"]);
+export const DesktopNameInput = v.pick(DesktopSchema, ["name"]);

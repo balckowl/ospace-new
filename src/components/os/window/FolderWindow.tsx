@@ -1,14 +1,20 @@
-import { FolderIcon, Globe, Sparkle, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { FolderIcon, Globe, Sparkle, StickyNote, X } from "lucide-react";
 import Image from "next/image";
 import type { CSSProperties, DragEvent } from "react";
 import { useState } from "react";
-import type { FontOption } from "@/db/schema";
+import type { FontOptionType } from "@/server/schemas/desktop.schema";
 import type { AppIcon, FolderWindowType } from "../types";
 import WindowHeader from "./WindowHeader";
 import { WindowWrapper } from "./WindowWrapper";
 
 const FOLDER_GRID_COLS = 4;
 const MIN_VISIBLE_ROWS = 3;
+const ICON_COMPONENTS: Record<AppIcon["iconKey"], LucideIcon> = {
+  StickyNote,
+  Globe,
+  FolderIcon,
+};
 
 const getAppColorStyles = (
   color: string | undefined,
@@ -60,7 +66,7 @@ export function FolderWindow({
   folderContents: string[];
   apps: AppIcon[];
   allFolderContents: Map<string, string[]>;
-  currentFont: FontOption;
+  currentFont: FontOptionType;
   desktopBackground?: string;
   brightness: number;
   isEditable: boolean;
@@ -85,7 +91,7 @@ export function FolderWindow({
   onSizeChange: (size: { width: number; height: number }) => void;
   failedFavicons: Record<string, string | null>;
   onFaviconError: (appId: string, favicon?: string) => void;
-  getFontStyle: (newFont: FontOption) => void;
+  getFontStyle: (newFont: FontOptionType) => void;
 }) {
   const [isExternalDragOver, setIsExternalDragOver] = useState(false);
 
@@ -120,8 +126,12 @@ export function FolderWindow({
         />
       );
     }
+    const IconComponent = ICON_COMPONENTS[app.iconKey] ?? StickyNote;
     return (
-      <app.icon size={30} className="relative z-10 text-black drop-shadow-sm" />
+      <IconComponent
+        size={30}
+        className="relative z-10 text-black drop-shadow-sm"
+      />
     );
   };
 
@@ -350,7 +360,7 @@ export function FolderWindow({
                           <div
                             className={`${getFontStyle(currentFont)} mt-1 w-full px-2 text-center font-medium text-white text-xs`}
                           >
-                            {app.name}
+                            {app.type !== "stamp" && app.name}
                           </div>
                         </div>
                       )}

@@ -1,5 +1,7 @@
+import { Scalar } from "@scalar/hono-api-reference";
 import type { Session, User } from "better-auth";
 import { Hono } from "hono";
+import { openAPIRouteHandler } from "hono-openapi";
 import { type DB, dbClient as db } from "@/db";
 import { auth } from "@/lib/auth";
 import { desktopAuthedRoutes } from "./routes/desktop.authed.routes";
@@ -26,6 +28,29 @@ app.use("*", async (c, next) => {
   c.set("session", session);
   await next();
 });
+
+app.get(
+  "/openapi",
+  openAPIRouteHandler(app, {
+    documentation: {
+      info: {
+        title: "My API",
+        version: "1.0.0",
+        description: "Valibot + hono-openapi example",
+      },
+      servers: [{ url: "http://localhost:3000", description: "Local" }],
+    },
+  }),
+);
+
+app.get(
+  "/docs",
+  Scalar({
+    url: "/api/openapi",
+    theme: "alternate",
+    layout: "modern",
+  }),
+);
 
 export const pub = app.route("/", desktopPublicRoutes);
 export const authed = app.route("/", desktopAuthedRoutes);

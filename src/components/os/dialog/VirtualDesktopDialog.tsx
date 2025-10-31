@@ -1,4 +1,5 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { type InferOutput, pick } from "valibot";
 import { Button } from "@/components/ui/button";
@@ -9,46 +10,45 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { authedHono } from "@/lib/hono-client";
 import { DesktopSchema } from "@/server/schemas/desktop.schema";
-import type { DesktopWithoutDates } from "../VirtualDesktopTab";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  updateDesktop: (newDesktop: DesktopWithoutDates) => void;
+  save: (name: string) => void | Promise<void>;
+  initialName?: string;
+  title?: string;
+  submitLabel?: string;
 };
 
 const nameSchema = pick(DesktopSchema, ["name"]);
 type nameSchemaType = InferOutput<typeof nameSchema>;
 
-export default function CreateVirtualDesktopDialog({
+export default function VirtualDesktopDialog({
   visible,
   onClose,
-  updateDesktop,
+  save,
+  initialName = "",
+  title = "Virtual Desktop",
+  submitLabel = "Save",
 }: Props) {
   const form = useForm<nameSchemaType>({
     resolver: valibotResolver(nameSchema),
     defaultValues: {
-      name: "",
+      name: initialName,
     },
   });
+
+  useEffect(() => {
+    if (visible) {
+      form.reset({ name: initialName });
+    }
+  }, [form, initialName, visible]);
 
   const currentName = form.watch("name");
 
   const onSubmit = async (formData: nameSchemaType) => {
-    const res = await authedHono.api.desktop.new.$post({
-      json: {
-        name: formData.name,
-      },
-    });
-
-    const data = await res.json();
-
-    if (!data) {
-      return null;
-    }
-    updateDesktop({ ...data });
+    await save(formData.name);
     onClose();
   };
 
@@ -56,12 +56,12 @@ export default function CreateVirtualDesktopDialog({
 
   return (
     <div
-      className="dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      style={{ zIndex: 20 }}
+      className={`dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm`}
+      style={{ zIndex: 7000 }}
     >
       <div className={`min-w-[400px] rounded-2xl bg-white p-0 shadow-2xl`}>
         <h3 className="mb-4 flex items-center gap-2 px-5 pt-5 font-semibold text-gray-800 text-lg">
-          こんばんは
+          {title}
         </h3>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -74,7 +74,7 @@ export default function CreateVirtualDesktopDialog({
                     <FormControl>
                       <div className="border-b-[1.5px]">
                         <input
-                          placeholder={"kokoko"}
+                          placeholder="デスクトップ名を入力"
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -101,7 +101,7 @@ export default function CreateVirtualDesktopDialog({
                 disabled={!currentName.trim()}
                 className="w-[120px] rounded-xl px-4 py-2 font-medium text-sm text-white transition-colors disabled:cursor-not-allowed disabled:bg-gray-300"
               >
-                save
+                {submitLabel}
               </Button>
             </div>
           </form>

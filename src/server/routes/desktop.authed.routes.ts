@@ -8,6 +8,8 @@ import { authRequired } from "../middleware/authRequired";
 import {
   BackgroundInput,
   CreateDesktopInput,
+  DesktopId,
+  DesktopNameInput,
   FontInput,
   StateInput,
   VisibilityInput,
@@ -136,6 +138,48 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
           folderContents: {},
         },
       })
+      .returning();
+
+    revalidateTag("desktop");
+
+    return c.json(rows[0], 200);
+  })
+  .put(
+    "/dektop/:id/name",
+    vValidator("param", DesktopId),
+    vValidator("json", DesktopNameInput),
+    async (c) => {
+      const { id: desktopId } = c.req.valid("param");
+      const { name: desktopName } = c.req.valid("json");
+
+      const rows = await dbClient
+        .update(desktop)
+        .set({
+          name: desktopName,
+        })
+        .where(
+          and(
+            eq(desktop.id, desktopId),
+            eq(desktop.userId, c.var.session.user.id),
+          ),
+        )
+        .returning();
+
+      revalidateTag("desktop");
+      
+      return c.json(rows[0], 200);
+    },
+  )
+  .delete("/desktop/:id/delete", vValidator("param", DesktopId), async (c) => {
+    const { id: desktopId } = c.req.valid("param");
+    const rows = await dbClient
+      .delete(desktop)
+      .where(
+        and(
+          eq(desktop.id, desktopId),
+          eq(desktop.userId, c.var.session.user.id),
+        ),
+      )
       .returning();
 
     revalidateTag("desktop");

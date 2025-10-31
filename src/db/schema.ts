@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { check, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { check, index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import type {
   AppLayoutSchemaType,
   BackgroundOptionType,
@@ -43,6 +43,7 @@ export const desktop = sqliteTable(
       .notNull()
       .default("SUNSET"),
     font: text("font").$type<FontOptionType>().notNull().default("INTER"),
+    orderIndex: integer("order_index").notNull().default(0),
     state: text("state", {
       mode: "json",
     })
@@ -68,6 +69,9 @@ export const desktop = sqliteTable(
       json_type(${t.state}, '$.folderContents') = 'object'
     `,
     ),
+    // クエリ・制約
+    index("idx_desktop_user_order").on(t.userId, t.orderIndex),
+    uniqueIndex("uq_desktop_user_order").on(t.userId, t.orderIndex),
   ],
 );
 
