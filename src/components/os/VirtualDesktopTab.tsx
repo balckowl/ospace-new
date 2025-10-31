@@ -699,6 +699,7 @@ export default function VirtualDesktopTab({
                 onDrop={(event) => handleDropOnTab(event, d.id)}
                 onDragEnd={handleDragEnd}
                 onContextMenu={(event) => {
+                  if (!isEdit) return;
                   event.preventDefault();
                   event.stopPropagation();
                   setTabContextMenu({
@@ -738,14 +739,16 @@ export default function VirtualDesktopTab({
             Save order
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={handleAddDesktop}
-          className="flex h-9 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-          aria-label="Add desktop"
-        >
-          <Plus size={16} />
-        </button>
+        {isEdit && (
+          <button
+            type="button"
+            onClick={handleAddDesktop}
+            className="flex h-9 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            aria-label="Add desktop"
+          >
+            <Plus size={16} />
+          </button>
+        )}
       </div>
       <Desktop
         key={current.id}
@@ -775,6 +778,7 @@ export default function VirtualDesktopTab({
         onEdit={handleEditDesktopRequest}
         onDelete={handleDeleteDesktopRequest}
         onClose={hideTabContextMenu}
+        showDelete={desktops.length > 1}
       />
     </div>
   );
