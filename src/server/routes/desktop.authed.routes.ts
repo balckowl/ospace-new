@@ -182,6 +182,16 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
   )
   .delete("/desktop/:id/delete", vValidator("param", DesktopId), async (c) => {
     const { id: desktopId } = c.req.valid("param");
+
+    const [{ cnt }] = await dbClient
+      .select({ cnt: sql<number>`count(*)` })
+      .from(desktop)
+      .where(eq(desktop.userId, c.var.session.user.id));
+
+    if (cnt <= 1) {
+      return c.json({ message: "もう削除できません。" }, 500);
+    }
+
     const rows = await dbClient
       .delete(desktop)
       .where(
