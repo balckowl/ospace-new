@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { validator as vValidator } from "hono-openapi";
 import { revalidateTag } from "next/cache";
@@ -11,6 +11,7 @@ import {
   DesktopId,
   DesktopNameInput,
   FontInput,
+  SaveOrderIds,
   StateInput,
   VisibilityInput,
 } from "../schemas/desktop.schema";
@@ -110,39 +111,47 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
   .post("/desktop/new", vValidator("json", CreateDesktopInput), async (c) => {
     const { name } = c.req.valid("json");
 
-    const rows = await dbClient
-      .insert(desktop)
-      .values({
-        name: name,
-        userId: c.var.session.user.id,
-        isPublic: false,
-        background: "DEFAULT",
-        font: "INTER",
-        state: {
-          appItems: [
-            {
-              id: "app-1",
-              name: "Intro",
-              iconKey: "StickyNote",
-              color: "#FFEB3B",
-              type: "memo",
-              content: `<p>hello</p>`,
-            },
-          ],
-          appPositions: {
-            "app-1": {
-              row: 0,
-              col: 0,
-            },
+    const row = await dbClient.transaction(async (tx) => {
+      const [maxRow] = await tx
+        .select({
+          maxOrder: sql<number>`max(${desktop.orderIndex})`
+        })
+        .from(desktop)
+        .where(eq(desktop.userId, c.var.session.user.id))
+
+      const nextOrder = (maxRow.maxOrder ?? -1) + 1
+
+      const rows = await tx
+        .insert(desktop)
+        .values({
+          name,
+          userId: c.var.session.user.id,
+          isPublic: false,
+          background: "DEFAULT",
+          font: "INTER",
+          orderIndex: nextOrder,
+          state: {
+            appItems: [
+              {
+                id: "app-1",
+                name: "Intro",
+                iconKey: "StickyNote",
+                color: "#FFEB3B",
+                type: "memo",
+                content: `<p>hello</p>`,
+              },
+            ],
+            appPositions: { "app-1": { row: 0, col: 0 } },
+            folderContents: {},
           },
-          folderContents: {},
-        },
-      })
-      .returning();
+        })
+        .returning();
+
+      return rows[0];
+    })
 
     revalidateTag("desktop");
-
-    return c.json(rows[0], 200);
+    return c.json(row, 200);
   })
   .put(
     "/dektop/:id/name",
@@ -166,7 +175,7 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
         .returning();
 
       revalidateTag("desktop");
-      
+
       return c.json(rows[0], 200);
     },
   )
@@ -185,4 +194,61 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
     revalidateTag("desktop");
 
     return c.json(rows[0], 200);
-  });
+  })
+  .post("/desktops/save-order", vValidator("json", SaveOrderIds), async (c) => {
+    const { desktopIds } = c.req.valid("json")
+
+    // 自分の全デスクトップ ID を取得
+    const mine = await dbClient
+      .select({ id: desktop.id })
+      .from(desktop)
+      .where(eq(desktop.userId, c.var.session.user.id));
+
+    const ownedIds = mine.map((m) => m.id);
+    const ownedSet = new Set(ownedIds);
+
+    // 件数一致
+    if (desktopIds.length !== ownedIds.length) {
+      return c.json({ message: "IDs count mismatch: send full list" }, 400);
+    }
+    // 全 ID が自分のもの
+    for (const id of desktopIds) {
+      if (!ownedSet.has(id)) {
+        return c.json({ message: `Invalid desktop id: ${id}` }, 400);
+      }
+    }
+    // 重複なし
+    const uniq = new Set(desktopIds);
+    if (uniq.size !== desktopIds.length) {
+      return c.json({ message: "Duplicate ids in payload" }, 400);
+    }
+
+    await dbClient.transaction(async (tx) => {
+      const BUMP = 1_000_000;
+
+      await tx
+        .update(desktop)
+        .set({
+          orderIndex: sql`${desktop.orderIndex} + ${BUMP}`,
+          updatedAt: /* @__PURE__ */ new Date(),
+        })
+        .where(and(eq(desktop.userId, c.var.session.user.id), inArray(desktop.id, desktopIds)));
+
+      const n = desktopIds.length;
+      const cases = desktopIds.map(
+        (id, i) => sql`WHEN ${desktop.id} = ${id} THEN ${n - 1 - i}`,
+      );
+      const caseSql = sql`CASE ${sql.join(cases, sql.raw(" "))} ELSE ${desktop.orderIndex} END`;
+
+      await tx
+        .update(desktop)
+        .set({
+          orderIndex: caseSql,
+          updatedAt: /* @__PURE__ */ new Date(),
+        })
+        .where(and(eq(desktop.userId, c.var.session.user.id), inArray(desktop.id, desktopIds)));
+    });
+
+    revalidateTag("desktop");
+    return c.json({ success: true, updated: desktopIds.length }, 200);
+  })

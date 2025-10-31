@@ -21,7 +21,7 @@ export const desktopPublicRoutes = new Hono<Env>().get(
       where: eq(user.osName, osName),
       with: {
         desktops: {
-          orderBy: (d, { asc }) => [asc(d.createdAt)],
+          orderBy: (d, { desc }) => [desc(d.orderIndex)],
         },
       },
     });

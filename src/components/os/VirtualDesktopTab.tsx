@@ -2,9 +2,11 @@
 
 import { Pin, PinOff, Plus } from "lucide-react";
 import {
+  type DragEvent,
   type FocusEvent,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -21,6 +23,16 @@ export type DesktopWithoutDates = Omit<
   "createdAt" | "updatedAt"
 >;
 
+const isSameOrder = (
+  list: DesktopWithoutDates[],
+  order: string[],
+): boolean => {
+  if (list.length !== order.length) {
+    return false;
+  }
+  return list.every((item, index) => item.id === order[index]);
+};
+
 type Props = {
   desktopList: DesktopWithoutDates[];
   osName: string;
@@ -36,6 +48,9 @@ export default function VirtualDesktopTab({
 }: Props) {
   const [tabId, setTabId] = useState(() => desktopList[0]?.id ?? "");
   const [desktops, setDesktops] = useState<DesktopWithoutDates[]>(desktopList);
+  const originalOrderRef = useRef<string[]>(desktopList.map((d) => d.id));
+  const [orderChanged, setOrderChanged] = useState(false);
+  const [draggedDesktopId, setDraggedDesktopId] = useState<string | null>(null);
   const [dialogState, setDialogState] = useState<{
     visible: boolean;
     mode: "create" | "edit";
@@ -64,6 +79,9 @@ export default function VirtualDesktopTab({
     desktopId: "",
     desktopName: "",
   });
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const previousRectsRef = useRef<Map<string, DOMRect>>(new Map());
+  const reduceMotionRef = useRef(false);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
   const hideTabContextMenu = useCallback(() => {
     setTabContextMenu({
@@ -77,6 +95,27 @@ export default function VirtualDesktopTab({
 
   const handleDialogClose = useCallback(() => {
     setDialogState((prev) => ({ ...prev, visible: false }));
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateReduceMotion = () => {
+      reduceMotionRef.current = media.matches;
+    };
+
+    updateReduceMotion();
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", updateReduceMotion);
+      return () => {
+        media.removeEventListener("change", updateReduceMotion);
+      };
+    }
+
+    media.addListener(updateReduceMotion);
+    return () => {
+      media.removeListener(updateReduceMotion);
+    };
   }, []);
 
   useEffect(() => {
@@ -122,13 +161,172 @@ export default function VirtualDesktopTab({
 
   useEffect(() => {
     setDesktops(desktopList);
+    originalOrderRef.current = desktopList.map((d) => d.id);
+    setOrderChanged(false);
   }, [desktopList]);
+
+  useLayoutEffect(() => {
+    const currentRects = new Map<string, DOMRect>();
+
+    desktops.forEach((desktop) => {
+      const node = itemRefs.current.get(desktop.id);
+      if (!node) {
+        return;
+      }
+      currentRects.set(desktop.id, node.getBoundingClientRect());
+    });
+
+    if (!reduceMotionRef.current) {
+      desktops.forEach((desktop) => {
+        const node = itemRefs.current.get(desktop.id);
+        if (!node) {
+          return;
+        }
+
+        const prevRect = previousRectsRef.current.get(desktop.id);
+        const nextRect = currentRects.get(desktop.id);
+
+        if (!prevRect || !nextRect) {
+          node.style.transition = "";
+          node.style.transform = "";
+          return;
+        }
+
+        const deltaX = prevRect.left - nextRect.left;
+        const deltaY = prevRect.top - nextRect.top;
+
+        if (deltaX === 0 && deltaY === 0) {
+          return;
+        }
+
+        node.style.transition = "none";
+        node.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const handleTransitionEnd = () => {
+              node.style.transition = "";
+              node.removeEventListener("transitionend", handleTransitionEnd);
+            };
+
+            node.style.transition = "transform 200ms ease";
+            node.style.transform = "";
+            node.addEventListener("transitionend", handleTransitionEnd, {
+              once: true,
+            });
+          });
+        });
+      });
+    } else {
+      desktops.forEach((desktop) => {
+        const node = itemRefs.current.get(desktop.id);
+        if (!node) {
+          return;
+        }
+        node.style.transition = "";
+        node.style.transform = "";
+      });
+    }
+
+    previousRectsRef.current = currentRects;
+  }, [desktops]);
 
   useEffect(() => {
     if (!desktops.some((d) => d.id === tabId)) {
       setTabId(desktops[0]?.id ?? "");
     }
   }, [desktops, tabId]);
+
+  const handleDragStart = useCallback(
+    (event: DragEvent<HTMLButtonElement>, desktopId: string) => {
+      setDraggedDesktopId(desktopId);
+      hideTabContextMenu();
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", desktopId);
+      }
+    },
+    [hideTabContextMenu],
+  );
+
+  const handleDragOverTab = useCallback(
+    (event: DragEvent<HTMLButtonElement>) => {
+      if (!draggedDesktopId) {
+        return;
+      }
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+      }
+    },
+    [draggedDesktopId],
+  );
+
+  const handleDropOnTab = useCallback(
+    (event: DragEvent<HTMLButtonElement>, overId: string) => {
+      event.preventDefault();
+      if (!draggedDesktopId || draggedDesktopId === overId) {
+        setDraggedDesktopId(null);
+        return;
+      }
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      const offsetY = event.clientY - rect.top;
+      const pointerRatio =
+        rect.height > 0 ? Math.min(Math.max(offsetY / rect.height, 0), 1) : 0.5;
+
+      setDesktops((prev) => {
+        const activeIndex = prev.findIndex((item) => item.id === draggedDesktopId);
+        const overIndex = prev.findIndex((item) => item.id === overId);
+
+        if (activeIndex === -1 || overIndex === -1) {
+          return prev;
+        }
+
+        const next = [...prev];
+        const [moved] = next.splice(activeIndex, 1);
+
+        const movingDown = activeIndex < overIndex;
+        let targetIndex = overIndex;
+
+        if (movingDown) {
+          if (pointerRatio < 0.25) {
+            targetIndex = Math.max(overIndex - 1, 0);
+          } else {
+            targetIndex = overIndex;
+          }
+        } else {
+          if (pointerRatio > 0.75) {
+            targetIndex = Math.min(overIndex + 1, next.length);
+          } else {
+            targetIndex = overIndex;
+          }
+        }
+
+        if (targetIndex < 0) {
+          targetIndex = 0;
+        }
+        if (targetIndex > next.length) {
+          targetIndex = next.length;
+        }
+
+        if (targetIndex === activeIndex) {
+          return prev;
+        }
+
+        next.splice(targetIndex, 0, moved);
+        setOrderChanged(!isSameOrder(next, originalOrderRef.current));
+        return next;
+      });
+
+      setDraggedDesktopId(null);
+    },
+    [draggedDesktopId],
+  );
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedDesktopId(null);
+  }, []);
 
   const handleDesktopUpdate = useCallback(
     (id: string, patch: Partial<DesktopWithoutDates>) => {
@@ -166,7 +364,12 @@ export default function VirtualDesktopTab({
   };
 
   const prependDesktop = useCallback((newDesktop: DesktopWithoutDates) => {
-    setDesktops((prev) => [newDesktop, ...prev]);
+    setDesktops((prev) => {
+      const next = [newDesktop, ...prev];
+      originalOrderRef.current = next.map((item) => item.id);
+      setOrderChanged(false);
+      return next;
+    });
   }, []);
 
   if (desktops.length === 0) {
@@ -274,6 +477,17 @@ export default function VirtualDesktopTab({
     }
   };
 
+  const handleSaveOrder = async () => {
+    const orderedIds = desktops.map((desktop) => desktop.id);
+    await authedHono.api.desktops["save-order"].$post({
+      json: {
+        desktopIds: orderedIds
+      }
+    })
+    originalOrderRef.current = orderedIds;
+    setOrderChanged(false);
+  };
+
   return (
     <div
       className="relative h-full transition-[padding-right] duration-300 ease-in-out"
@@ -342,12 +556,25 @@ export default function VirtualDesktopTab({
                 type="button"
                 role="tab"
                 aria-selected={d.id === current.id}
+                draggable
+                ref={(node) => {
+                  if (node) {
+                    itemRefs.current.set(d.id, node);
+                    node.style.willChange = "transform";
+                  } else {
+                    itemRefs.current.delete(d.id);
+                  }
+                }}
                 onClick={(event) => {
                   setTabId(d.id);
                   if (event.detail !== 0) {
                     setHasKeyboardFocus(false);
                   }
                 }}
+                onDragStart={(event) => handleDragStart(event, d.id)}
+                onDragOver={handleDragOverTab}
+                onDrop={(event) => handleDropOnTab(event, d.id)}
+                onDragEnd={handleDragEnd}
                 onContextMenu={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
@@ -360,10 +587,11 @@ export default function VirtualDesktopTab({
                   });
                 }}
                 className={[
-                  "group rounded-xl border border-black/10 px-2 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+                  "group cursor-grab rounded-xl border border-black/10 px-2 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
                   d.id === current.id
                     ? "bg-white text-black shadow-sm"
                     : "text-black/70 hover:bg-white/70",
+                  draggedDesktopId === d.id ? "cursor-grabbing opacity-70" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -378,6 +606,15 @@ export default function VirtualDesktopTab({
             );
           })}
         </div>
+        {orderChanged ? (
+          <button
+            type="button"
+            onClick={handleSaveOrder}
+            className="flex h-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          >
+            Save order
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={handleAddDesktop}

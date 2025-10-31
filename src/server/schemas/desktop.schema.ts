@@ -204,6 +204,7 @@ export const DesktopSchema = v.object({
   isPublic: v.boolean(),
   background: BackgroundOption,
   font: FontOption,
+  orderIndex: v.pipe(v.number(), v.integer(), v.minValue(0)),
   createdAt: v.date(),
   updatedAt: v.date(),
 });
@@ -224,6 +225,10 @@ export const GetDesktopStateResponse = v.object({
 
 export const osNameInput = v.object({
   osName: v.string(),
+});
+
+export const SaveOrderIds = v.object({
+  desktopIds: v.pipe(v.array(v.string()), v.minLength(1)),
 });
 
 export type IconKeyType = v.InferOutput<typeof IconKey>;
