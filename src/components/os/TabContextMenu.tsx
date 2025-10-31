@@ -12,11 +12,21 @@ type TabContextMenuProps = {
   onDownload: () => void;
   onEdit: () => void;
   onClose: () => void;
+  showDelete?: boolean;
 };
 
 export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
   function TabContextMenu(
-    { visible, position, desktopName, onDelete, onDownload, onEdit, onClose },
+    {
+      visible,
+      position,
+      desktopName,
+      onDelete,
+      onDownload,
+      onEdit,
+      onClose,
+      showDelete = true,
+    },
     ref,
   ) {
     if (!visible || !position) {
@@ -61,17 +71,19 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
           <Download size={16} />
           Download Notes
         </button>
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete();
-          }}
-          className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-        >
-          <Trash2 size={16} />
-          Delete Desktop
-        </button>
+        {showDelete && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}
+            className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+          >
+            <Trash2 size={16} />
+            Delete Desktop
+          </button>
+        )}
         <button
           type="button"
           onClick={(event) => {
