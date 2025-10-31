@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import type { StampTypeType } from "@/server/schemas/desktop.schema";
 
 type StampOption = {
@@ -94,12 +95,16 @@ type Props = {
   dialogZIndex: number;
   visible: boolean;
   onSelectStamp: (stampId: string) => void;
+  panelOffsetRight?: number;
+  usePinnedLayout?: boolean;
 };
 
 export default function StampDialog({
   dialogZIndex,
   visible,
   onSelectStamp,
+  panelOffsetRight = 0,
+  usePinnedLayout = false,
 }: Props) {
   const handleStampSelect = (stampId: string) => {
     onSelectStamp(stampId);
@@ -120,10 +125,18 @@ export default function StampDialog({
 
   return (
     <div
-      className="dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      style={{ zIndex: dialogZIndex }}
+      className={cn(
+        "dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm",
+        usePinnedLayout && "p-6",
+      )}
+      style={{ zIndex: dialogZIndex, right: panelOffsetRight }}
     >
-      <div className="stamp-dialog min-h-[270px] min-w-[450px] rounded-xl bg-white p-2.5 shadow-2xl">
+      <div
+        className={cn(
+          "stamp-dialog min-h-[270px] min-w-[450px] bg-white p-2.5 shadow-2xl",
+          usePinnedLayout ? "rounded-3xl" : "rounded-xl",
+        )}
+      >
         <Tabs defaultValue={stampTypes[0]}>
           <TabsList className="mb-2 gap-2 bg-transparent p-0">
             {stampTypes.map((type) => (

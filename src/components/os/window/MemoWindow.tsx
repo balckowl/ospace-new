@@ -2,7 +2,7 @@ import { Placeholder } from "@tiptap/extensions";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { X } from "lucide-react";
-import type { FontOption } from "@/db/schema";
+import type { FontOptionType } from "@/server/schemas/desktop.schema";
 import TiptapEditor from "../TipTapEditor";
 import type { MemoWindowType } from "../types";
 import WindowHeader from "./WindowHeader";
@@ -26,8 +26,8 @@ export function MemoWindow({
   onPositionChange: (position: { x: number; y: number }) => void;
   onSizeChange: (size: { width: number; height: number }) => void;
   isEditable: boolean;
-  getFontStyle: (newFont: FontOption) => void;
-  currentFont: FontOption;
+  getFontStyle: (newFont: FontOptionType) => void;
+  currentFont: FontOptionType;
 }) {
   const editor = useEditor({
     immediatelyRender: true,
@@ -96,9 +96,12 @@ export function MemoWindow({
       </WindowHeader>
 
       {/* Window Content */}
-      <div className="flex h-[calc(100%-40px)] flex-1 flex-col overflow-y-auto bg-white/90 px-1.5 pb-1.5">
+      <div
+        className="flex h-[calc(100%-40px)] flex-1 flex-col overflow-y-auto px-1.5 pb-1.5"
+        style={{ background: window.color }}
+      >
         <div
-          className="flex h-full flex-1 flex-col overflow-y-auto rounded-xl bg-white"
+          className="flex h-full flex-1 flex-col overflow-y-auto rounded-xl bg-white/90 backdrop-blur-sm"
           onMouseDown={handleContentAreaMouseDown}
         >
           <TiptapEditor editor={editor} />

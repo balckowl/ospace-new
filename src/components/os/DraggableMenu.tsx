@@ -22,6 +22,7 @@ import { PublicSelector } from "./PublicSelector";
 import type { HelpWindowType } from "./types";
 
 const DRAG_MARGIN = 100;
+const PINNED_PANEL_WIDTH = 220;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
@@ -43,6 +44,7 @@ type Props = {
   setHelpWindow: React.Dispatch<React.SetStateAction<HelpWindowType>>;
   helpWindow: HelpWindowType;
   desktopId: string;
+  isPanelPinned?: boolean;
 };
 
 export const DraggableMenu = ({
@@ -60,6 +62,7 @@ export const DraggableMenu = ({
   isEditable,
   setHelpWindow,
   desktopId,
+  isPanelPinned = false,
 }: Props) => {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -70,6 +73,7 @@ export const DraggableMenu = ({
   const [hasUserMoved, setHasUserMoved] = useState(false);
   const [isBrightnessOpen, setIsBrightnessOpen] = useState(false);
   const sliderValue = Math.max(0, Math.min(60, Math.round(brightness * 100)));
+  const pinnedOffset = isPanelPinned ? PINNED_PANEL_WIDTH : 0;
 
   const toggleHelpWindow = useCallback(() => {
     setHelpWindow((prev) => ({
@@ -82,7 +86,7 @@ export const DraggableMenu = ({
     const handleWindowResize = () => {
       if (!menuRef.current) return;
       const rect = menuRef.current.getBoundingClientRect();
-      const maxX = window.innerWidth - rect.width - DRAG_MARGIN;
+      const maxX = window.innerWidth - rect.width - DRAG_MARGIN - pinnedOffset;
       const maxY = window.innerHeight - rect.height - DRAG_MARGIN;
       setPosition((prev) => {
         if (!prev) return null;
@@ -94,8 +98,9 @@ export const DraggableMenu = ({
     };
 
     window.addEventListener("resize", handleWindowResize);
+    handleWindowResize();
     return () => window.removeEventListener("resize", handleWindowResize);
-  }, []);
+  }, [pinnedOffset]);
 
   useEffect(() => {
     if (typeof window === "undefined" || hasUserMoved || !menuRef.current) {
@@ -105,42 +110,39 @@ export const DraggableMenu = ({
     const rect = menuRef.current.getBoundingClientRect();
     const initialX = window.innerWidth / 2 - rect.width / 2;
     const initialY = window.innerHeight - rect.height - DRAG_MARGIN;
-    setPosition({
-      x: clamp(
-        initialX,
-        DRAG_MARGIN,
-        Math.max(window.innerWidth - rect.width - DRAG_MARGIN, DRAG_MARGIN),
-      ),
-      y: clamp(
-        initialY,
-        DRAG_MARGIN,
-        Math.max(window.innerHeight - rect.height - DRAG_MARGIN, DRAG_MARGIN),
-      ),
-    });
-  }, [hasUserMoved]);
-
-  const handlePointerMove = useCallback((event: PointerEvent) => {
-    if (!menuRef.current) return;
-
-    const rect = menuRef.current.getBoundingClientRect();
-    const maxX = window.innerWidth - rect.width - DRAG_MARGIN;
+    const maxX = window.innerWidth - rect.width - DRAG_MARGIN - pinnedOffset;
     const maxY = window.innerHeight - rect.height - DRAG_MARGIN;
-    const nextPosition = {
-      x: clamp(
-        event.clientX - dragOffsetRef.current.x,
-        DRAG_MARGIN,
-        Math.max(maxX, DRAG_MARGIN),
-      ),
-      y: clamp(
-        event.clientY - dragOffsetRef.current.y,
-        DRAG_MARGIN,
-        Math.max(maxY, DRAG_MARGIN),
-      ),
-    };
+    setPosition({
+      x: clamp(initialX, DRAG_MARGIN, Math.max(maxX, DRAG_MARGIN)),
+      y: clamp(initialY, DRAG_MARGIN, Math.max(maxY, DRAG_MARGIN)),
+    });
+  }, [hasUserMoved, pinnedOffset]);
 
-    setPosition(nextPosition);
-    setHasUserMoved(true);
-  }, []);
+  const handlePointerMove = useCallback(
+    (event: PointerEvent) => {
+      if (!menuRef.current) return;
+
+      const rect = menuRef.current.getBoundingClientRect();
+      const maxX = window.innerWidth - rect.width - DRAG_MARGIN - pinnedOffset;
+      const maxY = window.innerHeight - rect.height - DRAG_MARGIN;
+      const nextPosition = {
+        x: clamp(
+          event.clientX - dragOffsetRef.current.x,
+          DRAG_MARGIN,
+          Math.max(maxX, DRAG_MARGIN),
+        ),
+        y: clamp(
+          event.clientY - dragOffsetRef.current.y,
+          DRAG_MARGIN,
+          Math.max(maxY, DRAG_MARGIN),
+        ),
+      };
+
+      setPosition(nextPosition);
+      setHasUserMoved(true);
+    },
+    [pinnedOffset],
+  );
 
   const stopDragging = useCallback(() => {
     setIsDragging(false);

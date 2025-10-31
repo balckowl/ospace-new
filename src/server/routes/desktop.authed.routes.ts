@@ -114,12 +114,12 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
     const row = await dbClient.transaction(async (tx) => {
       const [maxRow] = await tx
         .select({
-          maxOrder: sql<number>`max(${desktop.orderIndex})`
+          maxOrder: sql<number>`max(${desktop.orderIndex})`,
         })
         .from(desktop)
-        .where(eq(desktop.userId, c.var.session.user.id))
+        .where(eq(desktop.userId, c.var.session.user.id));
 
-      const nextOrder = (maxRow.maxOrder ?? -1) + 1
+      const nextOrder = (maxRow.maxOrder ?? -1) + 1;
 
       const rows = await tx
         .insert(desktop)
@@ -148,7 +148,7 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
         .returning();
 
       return rows[0];
-    })
+    });
 
     revalidateTag("desktop");
     return c.json(row, 200);
@@ -196,7 +196,7 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
     return c.json(rows[0], 200);
   })
   .post("/desktops/save-order", vValidator("json", SaveOrderIds), async (c) => {
-    const { desktopIds } = c.req.valid("json")
+    const { desktopIds } = c.req.valid("json");
 
     // 自分の全デスクトップ ID を取得
     const mine = await dbClient
@@ -232,7 +232,12 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
           orderIndex: sql`${desktop.orderIndex} + ${BUMP}`,
           updatedAt: /* @__PURE__ */ new Date(),
         })
-        .where(and(eq(desktop.userId, c.var.session.user.id), inArray(desktop.id, desktopIds)));
+        .where(
+          and(
+            eq(desktop.userId, c.var.session.user.id),
+            inArray(desktop.id, desktopIds),
+          ),
+        );
 
       const n = desktopIds.length;
       const cases = desktopIds.map(
@@ -246,9 +251,14 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
           orderIndex: caseSql,
           updatedAt: /* @__PURE__ */ new Date(),
         })
-        .where(and(eq(desktop.userId, c.var.session.user.id), inArray(desktop.id, desktopIds)));
+        .where(
+          and(
+            eq(desktop.userId, c.var.session.user.id),
+            inArray(desktop.id, desktopIds),
+          ),
+        );
     });
 
     revalidateTag("desktop");
     return c.json({ success: true, updated: desktopIds.length }, 200);
-  })
+  });

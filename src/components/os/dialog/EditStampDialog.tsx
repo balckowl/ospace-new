@@ -9,6 +9,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 import { StampOnly } from "@/server/schemas/desktop.schema";
 
 type Props = {
@@ -19,6 +20,8 @@ type Props = {
   visible: boolean;
   onCancel: () => void;
   formLabel: string;
+  panelOffsetRight?: number;
+  usePinnedLayout?: boolean;
 };
 
 const stampSchema = pick(StampOnly, ["stampText"]);
@@ -32,6 +35,8 @@ export default function EditStampDialog({
   visible,
   onCancel,
   formLabel,
+  panelOffsetRight = 0,
+  usePinnedLayout = false,
 }: Props) {
   const form = useForm<stampSchemaType>({
     resolver: valibotResolver(stampSchema),
@@ -50,10 +55,18 @@ export default function EditStampDialog({
 
   return (
     <div
-      className="dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      style={{ zIndex: dialogZIndex }}
+      className={cn(
+        "dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm",
+        usePinnedLayout && "p-6",
+      )}
+      style={{ zIndex: dialogZIndex, right: panelOffsetRight }}
     >
-      <div className="edit-stamp-dialog min-w-[400px] rounded-2xl bg-white p-0 shadow-2xl">
+      <div
+        className={cn(
+          "edit-stamp-dialog min-w-[400px] bg-white p-0 shadow-2xl",
+          usePinnedLayout ? "rounded-3xl" : "rounded-2xl",
+        )}
+      >
         <h3 className="mb-4 flex items-center gap-2 px-5 pt-5 font-semibold text-gray-800 text-lg">
           Edit Stamp Text
         </h3>

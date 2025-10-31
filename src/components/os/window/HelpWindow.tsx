@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import type { FontOption } from "@/db/schema";
+import type { FontOptionType } from "@/server/schemas/desktop.schema";
 import type { HelpWindowType } from "../types";
 import WindowHeader from "./WindowHeader";
 import { WindowWrapper } from "./WindowWrapper";
@@ -18,8 +18,8 @@ export function HelpWindow({
   onBringToFront: () => void;
   onPositionChange: (position: { x: number; y: number }) => void;
   onSizeChange: (size: { width: number; height: number }) => void;
-  getFontStyle: (newFont: FontOption) => void;
-  currentFont: FontOption;
+  getFontStyle: (newFont: FontOptionType) => void;
+  currentFont: FontOptionType;
 }) {
   return (
     <WindowWrapper

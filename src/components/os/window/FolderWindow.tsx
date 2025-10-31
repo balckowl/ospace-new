@@ -1,5 +1,13 @@
 import type { LucideIcon } from "lucide-react";
-import { FolderIcon, Globe, Sparkle, StickyNote, X } from "lucide-react";
+import {
+  FileText,
+  FolderIcon,
+  FolderOpen,
+  Globe,
+  Sparkle,
+  StickyNote,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import type { CSSProperties, DragEvent } from "react";
 import { useState } from "react";
@@ -61,6 +69,7 @@ export function FolderWindow({
   failedFavicons,
   onFaviconError,
   getFontStyle,
+  openFolderIds,
 }: {
   window: FolderWindowType;
   folderContents: string[];
@@ -92,6 +101,7 @@ export function FolderWindow({
   failedFavicons: Record<string, string | null>;
   onFaviconError: (appId: string, favicon?: string) => void;
   getFontStyle: (newFont: FontOptionType) => void;
+  openFolderIds: Set<string>;
 }) {
   const [isExternalDragOver, setIsExternalDragOver] = useState(false);
 
@@ -126,6 +136,25 @@ export function FolderWindow({
         />
       );
     }
+
+    if (app.type === "memo" && app.content?.trim()) {
+      return (
+        <FileText
+          size={30}
+          className="relative z-10 text-black drop-shadow-sm"
+        />
+      );
+    }
+
+    if (app.type === "folder" && openFolderIds.has(app.id)) {
+      return (
+        <FolderOpen
+          size={30}
+          className="relative z-10 text-black drop-shadow-sm"
+        />
+      );
+    }
+
     const IconComponent = ICON_COMPONENTS[app.iconKey] ?? StickyNote;
     return (
       <IconComponent
@@ -218,7 +247,10 @@ export function FolderWindow({
       </WindowHeader>
 
       {/* Folder Content */}
-      <div className="h-[calc(100%-40px)] flex-1 overflow-auto bg-white/90 px-1.5 pb-1.5 backdrop-blur-lg">
+      <div
+        className="h-[calc(100%-40px)] flex-1 overflow-auto px-1.5 pb-1.5 backdrop-blur-lg"
+        style={{ background: window.color }}
+      >
         <div
           className={`relative h-full rounded-xl py-4 transition ${
             isExternalDragOver ? "ring-2 ring-white/70" : ""
@@ -229,6 +261,11 @@ export function FolderWindow({
           onDragLeave={handleExternalDragLeave}
           onDrop={handleExternalDropInternal}
         >
+          <div
+            className="pointer-events-none absolute inset-0 rounded-xl"
+            style={{ background: window.color, opacity: 0.35 }}
+            aria-hidden="true"
+          />
           <div
             className="pointer-events-none absolute inset-0 rounded-xl"
             style={{ backgroundColor: `rgba(0, 0, 0, ${brightness})` }}

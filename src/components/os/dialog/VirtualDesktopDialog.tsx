@@ -10,6 +10,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 import { DesktopSchema } from "@/server/schemas/desktop.schema";
 
 type Props = {
@@ -19,6 +20,8 @@ type Props = {
   initialName?: string;
   title?: string;
   submitLabel?: string;
+  panelOffsetRight?: number;
+  usePinnedLayout?: boolean;
 };
 
 const nameSchema = pick(DesktopSchema, ["name"]);
@@ -31,6 +34,8 @@ export default function VirtualDesktopDialog({
   initialName = "",
   title = "Virtual Desktop",
   submitLabel = "Save",
+  panelOffsetRight = 0,
+  usePinnedLayout = false,
 }: Props) {
   const form = useForm<nameSchemaType>({
     resolver: valibotResolver(nameSchema),
@@ -56,10 +61,18 @@ export default function VirtualDesktopDialog({
 
   return (
     <div
-      className={`dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm`}
-      style={{ zIndex: 7000 }}
+      className={cn(
+        "dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm",
+        usePinnedLayout && "p-6",
+      )}
+      style={{ zIndex: 7000, right: panelOffsetRight }}
     >
-      <div className={`min-w-[400px] rounded-2xl bg-white p-0 shadow-2xl`}>
+      <div
+        className={cn(
+          "min-w-[400px] bg-white p-0 shadow-2xl",
+          usePinnedLayout ? "rounded-3xl" : "rounded-2xl",
+        )}
+      >
         <h3 className="mb-4 flex items-center gap-2 px-5 pt-5 font-semibold text-gray-800 text-lg">
           {title}
         </h3>

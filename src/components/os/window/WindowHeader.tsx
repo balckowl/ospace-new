@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import type { FontOption } from "@/db/schema";
+import type { FontOptionType } from "@/server/schemas/desktop.schema";
 
 type Props = {
   children: ReactNode;
   title: string;
-  currentFont: FontOption;
-  getFontStyle: (newFont: FontOption) => void;
+  currentFont: FontOptionType;
+  getFontStyle: (newFont: FontOptionType) => void;
   accentColor?: string;
 };
 

@@ -9,6 +9,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 import { DesktopSchema } from "@/server/schemas/desktop.schema";
 
 export const DEFAULT_DIALOG_COLORS = [
@@ -34,6 +35,8 @@ type Props = {
   selectedColor?: string;
   onColorSelect?: (value: string) => void;
   colorOptions?: string[];
+  panelOffsetRight?: number;
+  usePinnedLayout?: boolean;
 };
 
 const nameSchema = pick(DesktopSchema, ["name"]);
@@ -54,6 +57,8 @@ export default function DefaultDialog({
   selectedColor,
   onColorSelect,
   colorOptions,
+  panelOffsetRight = 0,
+  usePinnedLayout = false,
 }: Props) {
   const form = useForm<nameSchemaType>({
     resolver: valibotResolver(nameSchema),
@@ -78,11 +83,21 @@ export default function DefaultDialog({
 
   return (
     <div
-      className="dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      style={{ zIndex: dialogZIndex }}
+      className={cn(
+        "dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm",
+        usePinnedLayout && "m-3 rounded-2xl",
+      )}
+      style={{
+        zIndex: dialogZIndex,
+        right: panelOffsetRight,
+      }}
     >
       <div
-        className={`min-w-[400px] rounded-2xl bg-white p-0 shadow-2xl ${dialogClassName}`}
+        className={cn(
+          "min-w-[400px] bg-white p-0 shadow-2xl",
+          usePinnedLayout ? "rounded-3xl" : "rounded-2xl",
+          dialogClassName,
+        )}
       >
         <h3 className="mb-4 flex items-center gap-2 px-5 pt-5 font-semibold text-gray-800 text-lg">
           {title}

@@ -2,7 +2,9 @@
 
 import {
   CircleAlert,
+  FileText,
   FolderIcon,
+  FolderOpen,
   Globe,
   type LucideIcon,
   Megaphone,
@@ -96,6 +98,11 @@ const comfortea = Comfortaa({ subsets: ["latin"] });
 
 const GRID_COLS = 6;
 const GRID_ROWS = 8;
+const PINNED_PANEL_WIDTH = 220;
+const PINNED_DESKTOP_PADDING = 12;
+const FRAME_OVERLAY_Z_INDEX = 2147483646;
+const DESKTOP_FRAME_RADIUS = "1rem";
+const FRAME_OVERLAY_COLOR = "var(--background, #fff)";
 
 type DesktopApp = DesktopStateType["state"]["appItems"][number];
 
@@ -266,6 +273,87 @@ export default function MacosDesktop({
   const [memoWindows, setMemoWindows] = useState<MemoWindowType[]>([]);
   const [browserWindows, setBrowserWindows] = useState<BrowserWindowType[]>([]);
   const [folderWindows, setFolderWindows] = useState<FolderWindowType[]>([]);
+  const openFolderIds = useMemo(
+    () =>
+      new Set(
+        folderWindows
+          .filter((window) => !window.isMinimized)
+          .map((window) => window.id),
+      ),
+    [folderWindows],
+  );
+  const panelOffsetRight = isPanelPinned ? PINNED_PANEL_WIDTH : 0;
+  const framePadding = isPanelPinned ? PINNED_DESKTOP_PADDING : 0;
+  const pinnedPaddingStyle: CSSProperties | undefined = framePadding
+    ? { padding: framePadding }
+    : undefined;
+  const frameOverlayStyle = useMemo<CSSProperties | undefined>(() => {
+    if (framePadding <= 0) return undefined;
+    return {
+      borderRadius: DESKTOP_FRAME_RADIUS,
+      boxShadow: `inset 0 0 0 ${framePadding}px ${FRAME_OVERLAY_COLOR}`,
+      zIndex: FRAME_OVERLAY_Z_INDEX,
+      pointerEvents: "none",
+    };
+  }, [framePadding]);
+
+  const frameCornerStyles = useMemo<
+    Array<{ key: string; style: CSSProperties }>
+  >(() => {
+    if (framePadding <= 0) return [];
+
+    const size = framePadding;
+    const base: CSSProperties = {
+      position: "absolute",
+      width: 0,
+      height: 0,
+      zIndex: FRAME_OVERLAY_Z_INDEX + 1,
+      pointerEvents: "none",
+    };
+
+    return [
+      {
+        key: "top-left",
+        style: {
+          ...base,
+          top: 0,
+          left: 0,
+          borderTop: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
+          borderRight: `${size}px solid transparent`,
+        },
+      },
+      {
+        key: "top-right",
+        style: {
+          ...base,
+          top: 0,
+          right: 0,
+          borderTop: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
+          borderLeft: `${size}px solid transparent`,
+        },
+      },
+      {
+        key: "bottom-left",
+        style: {
+          ...base,
+          bottom: 0,
+          left: 0,
+          borderBottom: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
+          borderRight: `${size}px solid transparent`,
+        },
+      },
+      {
+        key: "bottom-right",
+        style: {
+          ...base,
+          bottom: 0,
+          right: 0,
+          borderBottom: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
+          borderLeft: `${size}px solid transparent`,
+        },
+      },
+    ];
+  }, [framePadding]);
   const [nextzIndex, setNextzIndex] = useState(1000);
   const [_memoCounter, setMemoCounter] = useState(2);
   const [_folderCounter, setFolderCounter] = useState(1);
@@ -299,6 +387,10 @@ export default function MacosDesktop({
     newContent: "",
     newColor: "",
   });
+  const defaultDialogColor = DEFAULT_DIALOG_COLORS[0] ?? "#FEE2E2";
+  const [memoColor, setMemoColor] = useState(defaultDialogColor);
+  const [appColor, setAppColor] = useState(defaultDialogColor);
+  const [folderColor, setFolderColor] = useState(defaultDialogColor);
   const changeNameEditDialog = (value: string) =>
     setEditDialog((prev) => ({
       ...prev,
@@ -1090,6 +1182,7 @@ export default function MacosDesktop({
       folderId: contextMenu.folderId ?? null,
     });
     setMemoNameInput("Notes");
+    setMemoColor(defaultDialogColor);
     setContextMenu({
       visible: false,
       x: 0,
@@ -1109,6 +1202,7 @@ export default function MacosDesktop({
       position: contextMenu.position,
       folderId: contextMenu.folderId ?? null,
     });
+    setAppColor(defaultDialogColor);
     setContextMenu({
       visible: false,
       x: 0,
@@ -1129,6 +1223,7 @@ export default function MacosDesktop({
       folderId: contextMenu.folderId ?? null,
     });
     setFolderNameInput("Folder");
+    setFolderColor(defaultDialogColor);
     setContextMenu({
       visible: false,
       x: 0,
@@ -1412,7 +1507,7 @@ export default function MacosDesktop({
       id: memoId,
       name: memoNameInput.trim(),
       iconKey: "StickyNote",
-      color: "#FFEB3B",
+      color: memoColor,
       type: "memo",
       content: "",
     };
@@ -1439,6 +1534,7 @@ export default function MacosDesktop({
     setMemoCounter((prev) => prev + 1);
     setMemoNameDialog({ visible: false, position: null, folderId: null });
     setMemoNameInput("");
+    setMemoColor(defaultDialogColor);
   };
 
   const createAppWithUrl = async () => {
@@ -1514,7 +1610,7 @@ export default function MacosDesktop({
         id: appId,
         name: appUrlInput.trim(),
         iconKey: "Globe",
-        color: "#FFEB3B",
+        color: appColor,
         type: "website",
         url: appUrlInput.startsWith("http")
           ? appUrlInput
@@ -1528,6 +1624,7 @@ export default function MacosDesktop({
       setAppUrlDialog({ visible: false, position: null, folderId: null });
       setAppUrlInput("");
       setIsLoadingApp(false);
+      setAppColor(defaultDialogColor);
     }
   };
 
@@ -1542,7 +1639,7 @@ export default function MacosDesktop({
       id: folderId,
       name: folderNameInput.trim(),
       iconKey: "FolderIcon",
-      color: "#FFEB3B",
+      color: folderColor,
       type: "folder",
     };
 
@@ -1574,6 +1671,7 @@ export default function MacosDesktop({
     setFolderCounter((prev) => prev + 1);
     setFolderNameDialog({ visible: false, position: null, folderId: null });
     setFolderNameInput("");
+    setFolderColor(defaultDialogColor);
   };
 
   const onSelectStamp = (stampName: string) => {
@@ -1610,16 +1708,19 @@ export default function MacosDesktop({
   const cancelMemoCreation = () => {
     setMemoNameDialog({ visible: false, position: null, folderId: null });
     setMemoNameInput("");
+    setMemoColor(defaultDialogColor);
   };
 
   const cancelAppCreation = () => {
     setAppUrlDialog({ visible: false, position: null, folderId: null });
     setAppUrlInput("");
+    setAppColor(defaultDialogColor);
   };
 
   const cancelFolderCreation = () => {
     setFolderNameDialog({ visible: false, position: null, folderId: null });
     setFolderNameInput("");
+    setFolderColor(defaultDialogColor);
   };
 
   const openMemo = (memoApp: MemoAppType) => {
@@ -2012,6 +2113,15 @@ export default function MacosDesktop({
         />
       );
     }
+
+    if (app.type === "memo" && app.content?.trim()) {
+      return <FileText size={30} className="text-black/90" />;
+    }
+
+    if (app.type === "folder" && openFolderIds.has(app.id)) {
+      return <FolderOpen size={30} className="text-black/90" />;
+    }
+
     const IconComponent = ICON_COMPONENTS[app.iconKey] ?? StickyNote;
     return <IconComponent size={30} className="text-black/90" />;
   };
@@ -2157,13 +2267,22 @@ export default function MacosDesktop({
 
   return (
     <div
-      className={cn(
-        "relative h-screen overflow-hidden bg-white",
-        isPanelPinned && "p-3",
-      )}
+      className="relative h-screen overflow-hidden bg-white"
+      style={pinnedPaddingStyle}
     >
+      {frameOverlayStyle ? (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={frameOverlayStyle}
+          aria-hidden="true"
+        >
+          {frameCornerStyles.map((corner) => (
+            <div key={corner.key} style={corner.style} aria-hidden="true" />
+          ))}
+        </div>
+      ) : null}
       <div
-        className="relative h-full w-full overflow-hidden rounded-2xl"
+        className={`${isPanelPinned ? "rounded-2xl" : ""} relative z-45 h-full w-full overflow-hidden`}
         style={getBackgroundStyle()}
       >
         <TooltipProvider>
@@ -2217,6 +2336,7 @@ export default function MacosDesktop({
             setHelpWindow={setHelpWindow}
             helpWindow={helpWindow}
             desktopId={desktopById.id}
+            isPanelPinned={isPanelPinned}
           />
 
           {/* Desktop grid */}
@@ -2246,23 +2366,6 @@ export default function MacosDesktop({
             />
           )}
 
-          {editDialog.visible && editDialog.app && (
-            <DefaultDialog
-              visible={editDialog.visible}
-              title={`Edit ${editDialog.app.type === "memo" ? "Notes" : editDialog.app.type === "folder" ? "Folder" : "App"}`}
-              onCancel={cancelEdit}
-              onSave={saveEdit}
-              dialogZIndex={nextzIndex}
-              dialogClassName="edit-dialog"
-              placeholder="Enter name..."
-              nameInput={editDialog.newName}
-              changeNameInput={changeNameEditDialog}
-              selectedColor={editDialog.newColor}
-              onColorSelect={changeColorEditDialog}
-              colorOptions={DEFAULT_DIALOG_COLORS}
-            />
-          )}
-
           {editDialog.app && editDialog.visible && (
             <div>
               {editDialog.app.type === "stamp" ? (
@@ -2274,6 +2377,8 @@ export default function MacosDesktop({
                   visible={editDialog.visible}
                   onCancel={cancelEdit}
                   formLabel="Hello!!"
+                  panelOffsetRight={panelOffsetRight}
+                  usePinnedLayout={isPanelPinned}
                 />
               ) : (
                 <DefaultDialog
@@ -2289,6 +2394,8 @@ export default function MacosDesktop({
                   selectedColor={editDialog.newColor}
                   onColorSelect={changeColorEditDialog}
                   colorOptions={DEFAULT_DIALOG_COLORS}
+                  panelOffsetRight={panelOffsetRight}
+                  usePinnedLayout={isPanelPinned}
                 />
               )}
             </div>
@@ -2307,6 +2414,11 @@ export default function MacosDesktop({
               isLoadingApp={isLoadingApp}
               title="Create New App"
               placeholder="https://example.com"
+              panelOffsetRight={panelOffsetRight}
+              usePinnedLayout={isPanelPinned}
+              selectedColor={appColor}
+              onColorSelect={setAppColor}
+              colorOptions={DEFAULT_DIALOG_COLORS}
             />
           )}
 
@@ -2321,6 +2433,11 @@ export default function MacosDesktop({
               visible={memoNameDialog.visible}
               title="Create New Notes"
               placeholder="Enter notes name..."
+              panelOffsetRight={panelOffsetRight}
+              usePinnedLayout={isPanelPinned}
+              selectedColor={memoColor}
+              onColorSelect={setMemoColor}
+              colorOptions={DEFAULT_DIALOG_COLORS}
             />
           )}
 
@@ -2335,6 +2452,11 @@ export default function MacosDesktop({
               visible={folderNameDialog.visible}
               title="Create New Folder"
               placeholder="Enter folder name..."
+              panelOffsetRight={panelOffsetRight}
+              usePinnedLayout={isPanelPinned}
+              selectedColor={folderColor}
+              onColorSelect={setFolderColor}
+              colorOptions={DEFAULT_DIALOG_COLORS}
             />
           )}
 
@@ -2343,6 +2465,8 @@ export default function MacosDesktop({
               dialogZIndex={nextzIndex}
               visible={selectStampDialog.visible}
               onSelectStamp={onSelectStamp}
+              panelOffsetRight={panelOffsetRight}
+              usePinnedLayout={isPanelPinned}
             />
           )}
 
@@ -2516,6 +2640,7 @@ export default function MacosDesktop({
                   }}
                   failedFavicons={failedFavicons}
                   onFaviconError={markFaviconAsFailed}
+                  openFolderIds={openFolderIds}
                 />
               ),
           )}

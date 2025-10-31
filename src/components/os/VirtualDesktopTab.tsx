@@ -23,10 +23,9 @@ export type DesktopWithoutDates = Omit<
   "createdAt" | "updatedAt"
 >;
 
-const isSameOrder = (
-  list: DesktopWithoutDates[],
-  order: string[],
-): boolean => {
+const PINNED_PANEL_WIDTH = 220;
+
+const isSameOrder = (list: DesktopWithoutDates[], order: string[]): boolean => {
   if (list.length !== order.length) {
     return false;
   }
@@ -109,9 +108,7 @@ const buildDesktopExport = (desktop: DesktopWithoutDates) => {
     memos.forEach((item, index) => {
       const prefix = item.path.length ? `${item.path.join(" / ")} / ` : "";
       lines.push(`${index + 1}. ${prefix}${item.name}`);
-      const contentLines = item.content
-        ? item.content.split(/\r?\n/)
-        : [];
+      const contentLines = item.content ? item.content.split(/\r?\n/) : [];
       if (contentLines.length === 0) {
         lines.push("   (empty)");
       } else {
@@ -371,7 +368,9 @@ export default function VirtualDesktopTab({
         rect.height > 0 ? Math.min(Math.max(offsetY / rect.height, 0), 1) : 0.5;
 
       setDesktops((prev) => {
-        const activeIndex = prev.findIndex((item) => item.id === draggedDesktopId);
+        const activeIndex = prev.findIndex(
+          (item) => item.id === draggedDesktopId,
+        );
         const overIndex = prev.findIndex((item) => item.id === overId);
 
         if (activeIndex === -1 || overIndex === -1) {
@@ -554,13 +553,13 @@ export default function VirtualDesktopTab({
   const renameDesktop = async (id: string, name: string) => {
     const res = await authedHono.api.dektop[":id"].name.$put({
       param: {
-        id
+        id,
       },
       json: {
-        name
-      }
-    })
-    const data = await res.json()
+        name,
+      },
+    });
+    const data = await res.json();
     handleDesktopUpdate(data.id, { name: data.name });
   };
 
@@ -576,9 +575,9 @@ export default function VirtualDesktopTab({
     const orderedIds = desktops.map((desktop) => desktop.id);
     await authedHono.api.desktops["save-order"].$post({
       json: {
-        desktopIds: orderedIds
-      }
-    })
+        desktopIds: orderedIds,
+      },
+    });
     originalOrderRef.current = orderedIds;
     setOrderChanged(false);
   };
@@ -610,7 +609,7 @@ export default function VirtualDesktopTab({
     URL.revokeObjectURL(url);
 
     hideTabContextMenu();
-  }
+  };
 
   return (
     <div
@@ -764,6 +763,8 @@ export default function VirtualDesktopTab({
         initialName={dialogState.initialName}
         title={dialogState.mode === "create" ? "Add Desktop" : "Edit Desktop"}
         submitLabel={dialogState.mode === "create" ? "Save" : "Update"}
+        panelOffsetRight={isPinned ? PINNED_PANEL_WIDTH : 0}
+        usePinnedLayout={isPinned}
       />
       <TabContextMenu
         ref={contextMenuRef}

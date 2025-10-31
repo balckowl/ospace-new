@@ -106,12 +106,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -205,18 +201,12 @@
       "indexes": {
         "idx_desktop_user_order": {
           "name": "idx_desktop_user_order",
-          "columns": [
-            "userId",
-            "order_index"
-          ],
+          "columns": ["userId", "order_index"],
           "isUnique": false
         },
         "uq_desktop_user_order": {
           "name": "uq_desktop_user_order",
-          "columns": [
-            "userId",
-            "order_index"
-          ],
+          "columns": ["userId", "order_index"],
           "isUnique": true
         }
       },
@@ -225,12 +215,8 @@
           "name": "desktop_userId_user_id_fk",
           "tableFrom": "desktop",
           "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -312,9 +298,7 @@
       "indexes": {
         "session_token_unique": {
           "name": "session_token_unique",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "isUnique": true
         }
       },
@@ -323,12 +307,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -402,16 +382,12 @@
       "indexes": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         },
         "user_osName_unique": {
           "name": "user_osName_unique",
-          "columns": [
-            "osName"
-          ],
+          "columns": ["osName"],
           "isUnique": true
         }
       },
