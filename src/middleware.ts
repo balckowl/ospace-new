@@ -1,6 +1,6 @@
-import { availableLanguages, defaultLanguage } from "@/i18n/settings";
 import Negotiator from "negotiator";
 import { type NextRequest, NextResponse } from "next/server";
+import { availableLanguages, defaultLanguage } from "@/i18n/settings";
 
 const LANG_COOKIE_KEY = "lang";
 const ONE_YEAR = 60 * 60 * 24 * 365; // seconds

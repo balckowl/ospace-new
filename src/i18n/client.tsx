@@ -5,8 +5,8 @@ import I18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
 import resourcesToBackend from "i18next-resources-to-backend";
 import {
-  type ReactNode,
   createContext,
+  type ReactNode,
   useContext,
   useEffect,
   useState,

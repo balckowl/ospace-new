@@ -1,9 +1,10 @@
 // import LoginWrapper from "@/components/onboarding/LoginWrapper";
-import LoginWrapper from "@/components/onboarding/LoginWrapper";
-import { auth } from "@/lib/auth";
+
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import LoginWrapper from "@/components/onboarding/LoginWrapper";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Login",

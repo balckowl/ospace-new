@@ -1,8 +1,8 @@
-import WelcomeWrapper from "@/components/onboarding/WelcomeWrapper";
-import { auth } from "@/lib/auth";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import WelcomeWrapper from "@/components/onboarding/WelcomeWrapper";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Welcome",
