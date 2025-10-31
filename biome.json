@@ -20,6 +20,9 @@
       "recommended": true,
       "a11y": {
         "noStaticElementInteractions": "off"
+      },
+      "suspicious": {
+        "noUnknownAtRules": "warn"
       }
     },
     "domains": {
