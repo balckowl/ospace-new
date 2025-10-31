@@ -21,6 +21,7 @@ export function Safari({
   ...props
 }: SafariProps) {
   return (
+    // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
     <svg
       width={width}
       height={height}
@@ -76,6 +77,7 @@ export function Safari({
           className="mix-blend-luminosity"
         >
           <div className="flex h-full w-full items-center justify-center gap-2 text-[12px] font-medium text-[#A3A3A3] dark:text-[#737373]">
+            {/** biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
             <svg
               width="14"
               height="14"
