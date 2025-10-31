@@ -223,6 +223,18 @@ export const GetDesktopStateResponse = v.object({
   currentUser: currentUserSchema,
 });
 
+export const osNameFormInput = v.object({
+  osName: v.pipe(
+    v.string(),
+    v.minLength(2, "3文字以上にしてください"),
+    v.maxLength(10, "20文字以下にしてください"),
+    v.regex(
+      /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
+      "小文字英数とハイフンのみ。先頭末尾は英数。",
+    ),
+  ),
+});
+
 export const osNameInput = v.object({
   osName: v.string(),
 });

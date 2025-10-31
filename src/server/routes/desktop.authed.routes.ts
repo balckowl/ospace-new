@@ -1,9 +1,9 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { validator as vValidator } from "hono-openapi";
 import { revalidateTag } from "next/cache";
 import { dbClient } from "@/db";
-import { desktop } from "@/db/schema";
+import { desktop, user } from "@/db/schema";
 import { authRequired } from "../middleware/authRequired";
 import {
   BackgroundInput,
@@ -11,6 +11,7 @@ import {
   DesktopId,
   DesktopNameInput,
   FontInput,
+  osNameFormInput,
   SaveOrderIds,
   StateInput,
   VisibilityInput,
@@ -194,6 +195,70 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
     revalidateTag("desktop");
 
     return c.json(rows[0], 200);
+  })
+  .post("/user/:osName", vValidator("param", osNameFormInput), async (c) => {
+    const { osName } = c.req.valid("param");
+
+    const me = await dbClient
+      .select({ osName: user.osName })
+      .from(user)
+      .where(eq(user.id, c.var.session.user.id))
+      .limit(1);
+
+    if (me.length === 0) {
+      return c.json({ message: "ユーザーが見つかりませんでした。" }, 404);
+    }
+
+    if (me[0].osName !== null) {
+      return c.json({ message: "osName は一度しか設定できません。" }, 409);
+    }
+
+    const dupRows = await dbClient
+      .select({ id: user.id })
+      .from(user)
+      .where(and(eq(user.osName, osName), ne(user.id, c.var.session.user.id)))
+      .limit(1);
+
+    if (dupRows.length > 0) {
+      return c.json({ message: "この osName は既に使用されている。" }, 409);
+    }
+
+    const initialContent = `<p>Your planet &quot;${osName}&quot; is born! 🌍✨<br>You can find instructions on how to use it under <strong>Instructions</strong> in the menu bar.</p>`;
+
+    await dbClient.transaction(async (tx) => {
+      await tx
+        .update(user)
+        .set({ osName })
+        .where(eq(user.id, c.var.session.user.id));
+
+      await tx
+        .insert(desktop)
+        .values({
+          userId: c.var.session.user.id,
+          name: "名称未設定",
+          isPublic: false,
+          background: "DEFAULT",
+          font: "INTER",
+          orderIndex: 0,
+          state: {
+            appItems: [
+              {
+                id: "app-1",
+                name: "Intro",
+                iconKey: "StickyNote",
+                color: "#FFEB3B",
+                type: "memo",
+                content: initialContent,
+              },
+            ],
+            appPositions: { "app-1": { row: 0, col: 0 } },
+            folderContents: {},
+          },
+        })
+        .returning();
+    });
+
+    return c.json({ message: "作成に成功しました。" }, 200);
   })
   .post("/desktops/save-order", vValidator("json", SaveOrderIds), async (c) => {
     const { desktopIds } = c.req.valid("json");
