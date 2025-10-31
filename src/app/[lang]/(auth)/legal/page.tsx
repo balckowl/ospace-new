@@ -1,15 +1,12 @@
-// import LegalWrapper from "@/src/components/onboarding/LegalWrapper";
 import type { Metadata } from "next";
+import LegalWrapper from "@/components/onboarding/LegalWrapper";
 
 export const metadata: Metadata = {
-  title: "Logal",
+  title: "Legal",
 };
 
 export default function Page() {
   return (
-    <>
-      {/* <LegalWrapper /> */}
-      legal
-    </>
+      <LegalWrapper />
   );
 }
