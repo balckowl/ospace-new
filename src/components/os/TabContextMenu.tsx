@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilLine, Trash2 } from "lucide-react";
+import { Download, PencilLine, Trash2 } from "lucide-react";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -9,13 +9,14 @@ type TabContextMenuProps = {
   position: { x: number; y: number } | null;
   desktopName: string;
   onDelete: () => void;
+  onDownload: () => void;
   onEdit: () => void;
   onClose: () => void;
 };
 
 export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
   function TabContextMenu(
-    { visible, position, desktopName, onDelete, onEdit, onClose },
+    { visible, position, desktopName, onDelete, onDownload, onEdit, onClose },
     ref,
   ) {
     if (!visible || !position) {
@@ -48,6 +49,17 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
         >
           <PencilLine size={16} />
           Edit Desktop
+        </button>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onDownload();
+          }}
+          className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-black/70 transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        >
+          <Download size={16} />
+          Download Notes
         </button>
         <button
           type="button"

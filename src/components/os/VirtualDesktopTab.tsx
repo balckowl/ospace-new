@@ -33,6 +33,101 @@ const isSameOrder = (
   return list.every((item, index) => item.id === order[index]);
 };
 
+const sanitizeFileName = (input: string) =>
+  input.replace(/[\\/:*?"<>|]/g, "_") || "desktop";
+
+const buildDesktopExport = (desktop: DesktopWithoutDates) => {
+  const { state, name } = desktop;
+  const { appItems, folderContents } = state;
+  const appById = new Map(appItems.map((item) => [item.id, item]));
+
+  const childIds = new Set<string>();
+  for (const ids of Object.values(folderContents ?? {})) {
+    ids.forEach((id) => {
+      childIds.add(id);
+    });
+  }
+
+  const rootIds = appItems
+    .map((item) => item.id)
+    .filter((id) => !childIds.has(id));
+
+  const websites: Array<{ name: string; url: string; path: string[] }> = [];
+  const memos: Array<{ name: string; content: string; path: string[] }> = [];
+
+  const visit = (id: string, path: string[]) => {
+    const app = appById.get(id);
+    if (!app) {
+      return;
+    }
+
+    if (app.type === "folder") {
+      const children = state.folderContents[app.id] ?? [];
+      const nextPath = [...path, app.name];
+      children.forEach((childId) => {
+        visit(childId, nextPath);
+      });
+      return;
+    }
+
+    if (app.type === "website") {
+      websites.push({ name: app.name, url: app.url, path });
+      return;
+    }
+
+    if (app.type === "memo") {
+      memos.push({ name: app.name, content: app.content, path });
+      return;
+    }
+  };
+
+  rootIds.forEach((rootId) => {
+    visit(rootId, []);
+  });
+
+  const lines: string[] = [];
+  lines.push(`Desktop: ${name}`);
+  lines.push(`Generated: ${new Date().toLocaleString()}`);
+  lines.push("");
+
+  lines.push("Websites:");
+  if (websites.length === 0) {
+    lines.push("- (none)");
+  } else {
+    websites.forEach((item, index) => {
+      const prefix = item.path.length ? `${item.path.join(" / ")} / ` : "";
+      lines.push(`${index + 1}. ${prefix}${item.name}`);
+      lines.push(`   URL: ${item.url}`);
+    });
+  }
+
+  lines.push("");
+  lines.push("Memos:");
+  if (memos.length === 0) {
+    lines.push("- (none)");
+  } else {
+    memos.forEach((item, index) => {
+      const prefix = item.path.length ? `${item.path.join(" / ")} / ` : "";
+      lines.push(`${index + 1}. ${prefix}${item.name}`);
+      const contentLines = item.content
+        ? item.content.split(/\r?\n/)
+        : [];
+      if (contentLines.length === 0) {
+        lines.push("   (empty)");
+      } else {
+        contentLines.forEach((line) => {
+          lines.push(`   ${line}`);
+        });
+      }
+    });
+  }
+
+  lines.push("");
+  lines.push("-----");
+
+  return lines.join("\n");
+};
+
 type Props = {
   desktopList: DesktopWithoutDates[];
   osName: string;
@@ -168,19 +263,19 @@ export default function VirtualDesktopTab({
   useLayoutEffect(() => {
     const currentRects = new Map<string, DOMRect>();
 
-    desktops.forEach((desktop) => {
+    for (const desktop of desktops) {
       const node = itemRefs.current.get(desktop.id);
       if (!node) {
-        return;
+        continue;
       }
       currentRects.set(desktop.id, node.getBoundingClientRect());
-    });
+    }
 
     if (!reduceMotionRef.current) {
-      desktops.forEach((desktop) => {
+      for (const desktop of desktops) {
         const node = itemRefs.current.get(desktop.id);
         if (!node) {
-          return;
+          continue;
         }
 
         const prevRect = previousRectsRef.current.get(desktop.id);
@@ -189,14 +284,14 @@ export default function VirtualDesktopTab({
         if (!prevRect || !nextRect) {
           node.style.transition = "";
           node.style.transform = "";
-          return;
+          continue;
         }
 
         const deltaX = prevRect.left - nextRect.left;
         const deltaY = prevRect.top - nextRect.top;
 
         if (deltaX === 0 && deltaY === 0) {
-          return;
+          continue;
         }
 
         node.style.transition = "none";
@@ -216,16 +311,16 @@ export default function VirtualDesktopTab({
             });
           });
         });
-      });
+      }
     } else {
-      desktops.forEach((desktop) => {
+      for (const desktop of desktops) {
         const node = itemRefs.current.get(desktop.id);
         if (!node) {
-          return;
+          continue;
         }
         node.style.transition = "";
         node.style.transform = "";
-      });
+      }
     }
 
     previousRectsRef.current = currentRects;
@@ -488,6 +583,35 @@ export default function VirtualDesktopTab({
     setOrderChanged(false);
   };
 
+  const handleDownloadDesktop = () => {
+    const targetId = tabContextMenu.desktopId;
+    if (!targetId) {
+      hideTabContextMenu();
+      return;
+    }
+
+    const desktop = desktops.find((d) => d.id === targetId);
+    if (!desktop) {
+      hideTabContextMenu();
+      return;
+    }
+
+    const textContent = buildDesktopExport(desktop);
+    const blob = new Blob([textContent], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${sanitizeFileName(desktop.name)}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+
+    hideTabContextMenu();
+  }
+
   return (
     <div
       className="relative h-full transition-[padding-right] duration-300 ease-in-out"
@@ -646,6 +770,7 @@ export default function VirtualDesktopTab({
         visible={tabContextMenu.visible}
         position={menuPosition}
         desktopName={tabContextMenu.desktopName}
+        onDownload={handleDownloadDesktop}
         onEdit={handleEditDesktopRequest}
         onDelete={handleDeleteDesktopRequest}
         onClose={hideTabContextMenu}
