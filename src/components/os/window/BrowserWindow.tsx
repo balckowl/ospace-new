@@ -240,7 +240,7 @@ export function BrowserWindow({
           <Image
             width={30}
             height={30}
-            src="/astro.png"
+            src="/lp/astro.avif"
             alt="Astro mascot"
             className={`h-44 w-auto drop-shadow-2xl transition-transform duration-500 ${copiedUrl ? "-translate-y-1" : "translate-y-10"}`}
             draggable={false}

@@ -149,7 +149,7 @@ export default function StampDialog({
                 <button type="button">
                   {stampTypeLabels[type] === "Emoji" && (
                     <Image
-                      src="/stamp-1.png"
+                      src="/os/stamp/stamp-1.avif"
                       width={30}
                       height={30}
                       alt="emoji"
@@ -157,7 +157,7 @@ export default function StampDialog({
                   )}
                   {stampTypeLabels[type] === "Wakusei" && (
                     <Image
-                      src="/wakusei-4.png"
+                      src="/os/stamp/wakusei-4.avif"
                       width={30}
                       height={30}
                       alt="wakusei"
@@ -165,7 +165,7 @@ export default function StampDialog({
                   )}
                   {stampTypeLabels[type] === "Original" && (
                     <Image
-                      src="/astro-8.png"
+                      src="/os/stamp/astro-8.avif"
                       width={30}
                       height={30}
                       alt="original"
