@@ -9,6 +9,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { StampOnly } from "@/server/schemas/desktop.schema";
 
@@ -38,6 +39,8 @@ export default function EditStampDialog({
   panelOffsetRight = 0,
   usePinnedLayout = false,
 }: Props) {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const form = useForm<stampSchemaType>({
     resolver: valibotResolver(stampSchema),
     defaultValues: {
@@ -68,7 +71,7 @@ export default function EditStampDialog({
         )}
       >
         <h3 className="mb-4 flex items-center gap-2 px-5 pt-5 font-semibold text-gray-800 text-lg">
-          Edit Stamp Text
+          {t("edit_stamp_dialog.title")}
         </h3>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -102,14 +105,14 @@ export default function EditStampDialog({
                 className="w-[120px] rounded-xl bg-gray-100 px-4 py-2 font-medium text-gray-700 text-sm transition-colors hover:bg-gray-200"
                 type="button"
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={!currentContent?.trim()}
                 className="w-[120px] rounded-xl px-4 py-2 font-medium text-sm text-white transition-colors disabled:cursor-not-allowed disabled:bg-gray-300"
               >
-                Save
+                {t("common.save")}
               </Button>
             </div>
           </form>

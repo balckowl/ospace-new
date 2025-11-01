@@ -1,6 +1,7 @@
 import { Check, Type } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { authedHono } from "@/lib/hono-client";
 import type { FontOptionType } from "@/server/schemas/desktop.schema";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -28,6 +29,8 @@ export const FontSelector = ({
   desktopId,
 }: Props) => {
   const [open, setOpen] = useState(false);
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const handleFontChange = async (newFont: FontOptionType) => {
     toast.dismiss();
     onFontChange(newFont);
@@ -41,13 +44,13 @@ export const FontSelector = ({
           id: desktopId,
         },
       });
-      toast("font changed", {
+      toast(t("success.font"), {
         icon: <Type size={17} />,
         className: "text-sm",
       });
       setOpen(false);
     } catch (e) {
-      toast("Font change failed", {
+      toast(t("failed.font"), {
         style: { color: "#dc2626" },
         icon: <Type size={17} />,
         className: "text-sm",

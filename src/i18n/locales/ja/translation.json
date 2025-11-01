@@ -1,5 +1,17 @@
 {
   "get_started": "始める",
+  "sign_out": "サインアウト",
+  "sign_in": "サインイン",
+  "top_page": "トップページ",
+  "common": {
+    "edit": "編集",
+    "download": "ダウンロード",
+    "delete": "削除",
+    "update": "更新",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "revert": "取り消し"
+  },
   "hero": {
     "title": "ウェブの<0>宇宙</0>に<1/>あなただけの惑星を打ち上げよう"
   },
@@ -52,5 +64,65 @@
     "title": "あなたの惑星\n \"{{osName}}\" が誕生しました",
     "desc": "さあ旅を始めよう。",
     "btn": "今すぐ探検する"
+  },
+  "virtual_desktop_tab": {
+    "save": "並び順を保存",
+    "add_desktop": "デスクトップを追加",
+    "edit_desktop": "デスクトップを編集"
+  },
+  "virtual_desktop_dialog": {
+    "placeholder": "デスクトップ名を入力 ..."
+  },
+  "context_menu": {
+    "notes": "メモ",
+    "folder": "フォルダ",
+    "link": "リンク",
+    "stamp": "スタンプ"
+  },
+  "desktop": {
+    "placeholder": "名前を入力...",
+    "create_new_app": "新しいアプリを作成",
+    "app_placeholder": "https://example.com",
+    "create_new_notes": "新しいメモを作成",
+    "notes_placeholder": "メモ名を入力...",
+    "create_new_folder": "新しいフォルダを作成",
+    "folder_placeholder": "フォルダ名を入力...",
+    "editstamp_label": "こんにちは！",
+    "default_dialog_title": {
+      "app": "アプリを編集",
+      "memo": "メモを編集",
+      "folder": "フォルダを編集"
+    },
+    "unsaved_changes": "未保存の変更があります"
+  },
+  "edit_stamp_dialog": {
+    "title": "スタンプテキストを編集"
+  },
+  "mobile_lock_view": {
+    "text": "この画面サイズはサポートされていません。"
+  },
+  "help_selector": {
+    "changelog": "リリースノート",
+    "instructions": "説明"
+  },
+  "public_selector": {
+    "public": "公開",
+    "private": "非公開"
+  },
+  "failed": {
+    "background": "背景の変更に失敗しました",
+    "desktop": "デスクトップの更新に失敗しました",
+    "font": "フォントの変更に失敗しました",
+    "sign_out": "サインアウトに失敗しました。もう一度お試しください。",
+    "public": "公開情報の変更に失敗しました"
+  },
+  "success": {
+    "background": "背景を変更しました",
+    "desktop": "デスクトップの状態を保存しました",
+    "font": "フォントを変更しました",
+    "public": "公開情報を変更しました"
+  },
+  "discard": {
+    "desktop": "変更を破棄しました"
   }
 }

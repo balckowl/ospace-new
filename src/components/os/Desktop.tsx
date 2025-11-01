@@ -22,6 +22,7 @@ import {
 import Image from "next/image";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { authedHono } from "@/lib/hono-client";
 import { cn } from "@/lib/utils";
 import type {
@@ -115,6 +116,8 @@ export default function MacosDesktop({
   currentUser,
   isPanelPinned = false,
 }: Props) {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const backgroundImg = useMemo(() => {
     return backgroundOptions.find((opt) => opt.name === desktopById.background);
   }, [desktopById]);
@@ -1169,7 +1172,7 @@ export default function MacosDesktop({
         },
       });
       if (!res.ok) {
-        toast("Desktop update failed", {
+        toast(t("failed.desktop"), {
           style: { color: "#dc2626" },
           icon: <Megaphone size={19} />,
         });
@@ -1179,11 +1182,11 @@ export default function MacosDesktop({
         return;
       }
       onDesktopUpdate?.(desktopById.id, { state });
-      toast("Desktop state saved", {
+      toast(t("success.desktop"), {
         icon: <Megaphone size={19} />,
       });
     } catch {
-      toast("Desktop update failed", {
+      toast(t("failed.desktop"), {
         style: { color: "#dc2626" },
         icon: <Megaphone size={19} />,
       });
@@ -1198,7 +1201,7 @@ export default function MacosDesktop({
     setApps(cloneApps(originalApps));
     setAppPositions(cloneAppPositions(originalAppPositions));
     setFolderContents(cloneFolderContents(originalFolderContents));
-    toast("Changes discarded", {
+    toast(t("discard.desktop"), {
       icon: <Megaphone size={19} />,
     });
   };
@@ -1572,19 +1575,19 @@ export default function MacosDesktop({
                   onSave={saveEdit}
                   visible={editDialog.visible}
                   onCancel={cancelEdit}
-                  formLabel="Hello!!"
+                  formLabel={t("desktop.editstamp_label")}
                   panelOffsetRight={panelOffsetRight}
                   usePinnedLayout={isPanelPinned}
                 />
               ) : (
                 <DefaultDialog
                   visible={editDialog.visible}
-                  title={`Edit ${editDialog.app.type === "memo" ? "Notes" : editDialog.app.type === "folder" ? "Folder" : "App"}`}
+                  title={`${editDialog.app.type === "memo" ? t("desktop.default_dialog_title.memo") : editDialog.app.type === "folder" ? t("desktop.default_dialog_title.folder") : t("desktop.default_dialog_title.app")}`}
                   onCancel={cancelEdit}
                   onSave={saveEdit}
                   dialogZIndex={nextzIndex}
                   dialogClassName="edit-dialog"
-                  placeholder="Enter name..."
+                  placeholder={t("desktop.placeholder")}
                   nameInput={editDialog.newName}
                   changeNameInput={changeNameEditDialog}
                   selectedColor={editDialog.newColor}
@@ -1592,6 +1595,8 @@ export default function MacosDesktop({
                   colorOptions={DEFAULT_DIALOG_COLORS}
                   panelOffsetRight={panelOffsetRight}
                   usePinnedLayout={isPanelPinned}
+                  saveLabel={t("common.save")}
+                  cancelLabel={t("common.cancel")}
                 />
               )}
             </div>
@@ -1606,10 +1611,11 @@ export default function MacosDesktop({
               onSave={createAppWithUrl}
               onCancel={cancelAppCreation}
               visible={appUrlDialog.visible}
-              saveLabel={isLoadingApp ? "Creating..." : "Save"}
+              cancelLabel={t("common.cancel")}
+              saveLabel={isLoadingApp ? "Creating..." : t("common.save")}
               isLoadingApp={isLoadingApp}
-              title="Create New App"
-              placeholder="https://example.com"
+              title={t("desktop.create_new_app")}
+              placeholder={t("desktop.app_placeholder")}
               panelOffsetRight={panelOffsetRight}
               usePinnedLayout={isPanelPinned}
               selectedColor={appColor}
@@ -1627,13 +1633,15 @@ export default function MacosDesktop({
               onSave={createMemoWithName}
               onCancel={cancelMemoCreation}
               visible={memoNameDialog.visible}
-              title="Create New Notes"
-              placeholder="Enter notes name..."
+              title={t("desktop.create_new_notes")}
+              placeholder={t("desktop.notes_placeholder")}
               panelOffsetRight={panelOffsetRight}
               usePinnedLayout={isPanelPinned}
               selectedColor={memoColor}
               onColorSelect={setMemoColor}
               colorOptions={DEFAULT_DIALOG_COLORS}
+              saveLabel={t("common.save")}
+              cancelLabel={t("common.cancel")}
             />
           )}
 
@@ -1646,13 +1654,15 @@ export default function MacosDesktop({
               onSave={createFolderWithName}
               onCancel={cancelFolderCreation}
               visible={folderNameDialog.visible}
-              title="Create New Folder"
-              placeholder="Enter folder name..."
+              title={t("desktop.create_new_folder")}
+              placeholder={t("desktop.folder_placeholder")}
               panelOffsetRight={panelOffsetRight}
               usePinnedLayout={isPanelPinned}
               selectedColor={folderColor}
               onColorSelect={setFolderColor}
               colorOptions={DEFAULT_DIALOG_COLORS}
+              saveLabel={t("common.save")}
+              cancelLabel={t("common.cancel")}
             />
           )}
 
@@ -1841,7 +1851,9 @@ export default function MacosDesktop({
             >
               <div className="flex items-center gap-3 rounded-t-2xl border-b bg-white/90 px-3 py-3">
                 <CircleAlert size={17} />
-                <p className="font-bold text-sm">Unsaved changes</p>
+                <p className="font-bold text-sm">
+                  {t("desktop.unsaved_changes")}
+                </p>
               </div>
               <div className="rounded-b-2xl bg-white/85 px-3 py-3">
                 <div className="flex items-center gap-2">
@@ -1851,14 +1863,14 @@ export default function MacosDesktop({
                     className="w-[120px] rounded-xl"
                     onClick={handleRevertDesktopChanges}
                   >
-                    Revert
+                    {t("common.revert")}
                   </Button>
                   <Button
                     size="sm"
                     className="w-[120px] rounded-xl"
                     onClick={handleSaveDesktop}
                   >
-                    Save
+                    {t("common.save")}
                   </Button>
                 </div>
               </div>

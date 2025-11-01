@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { authedHono } from "@/lib/hono-client";
 import type { DesktopStateType } from "@/server/schemas/desktop.schema";
 import { Button } from "../ui/button";
@@ -176,6 +177,8 @@ export default function VirtualDesktopTab({
     desktopId: "",
     desktopName: "",
   });
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const previousRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const reduceMotionRef = useRef(false);
@@ -781,7 +784,7 @@ export default function VirtualDesktopTab({
             {isLoading && (
               <Loader2 className="animate-spin" width={15} height={15} />
             )}{" "}
-            Save order
+            {t("virtual_desktop_tab.save")}
           </Button>
         ) : null}
         {canAddDesktop && (
@@ -809,8 +812,14 @@ export default function VirtualDesktopTab({
         onClose={handleDialogClose}
         save={handleDialogSubmit}
         initialName={dialogState.initialName}
-        title={dialogState.mode === "create" ? "Add Desktop" : "Edit Desktop"}
-        submitLabel={dialogState.mode === "create" ? "Save" : "Update"}
+        title={
+          dialogState.mode === "create"
+            ? t("virtual_desktop_tab.add_desktop")
+            : t("virtual_desktop_tab.edit_desktop")
+        }
+        submitLabel={
+          dialogState.mode === "create" ? t("common.save") : t("common.update")
+        }
         panelOffsetRight={isPinned ? PINNED_PANEL_WIDTH : 0}
         usePinnedLayout={isPinned}
       />

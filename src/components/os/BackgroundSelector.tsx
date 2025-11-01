@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { authedHono } from "@/lib/hono-client";
 import type { BackgroundOptionType } from "@/server/schemas/desktop.schema";
 import { backgroundOptions } from "./BackgroundImage";
@@ -26,6 +27,8 @@ export function BackgroundSelector({
   desktopId,
 }: BackgroundSelectorProps) {
   const [open, setOpen] = useState(false);
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
 
   const handleBackgroundChange = async (
     name: BackgroundOptionType,
@@ -45,14 +48,14 @@ export function BackgroundSelector({
         },
       });
       if (!res.ok) {
-        toast("Background change failed", {
+        toast(t("failed.background"), {
           style: { color: "#dc2626" },
           icon: <Paintbrush size={19} />,
           className: "text-sm",
         });
         return;
       }
-      toast("Background changed", {
+      toast(t("success.background"), {
         icon: <Paintbrush size={19} />,
         className: "text-sm font-bold",
         style: {
@@ -62,7 +65,7 @@ export function BackgroundSelector({
       setBackground(value);
       setOpen(false);
     } catch (e) {
-      toast("Background change failed", {
+      toast(t("failed.background"), {
         style: { color: "#dc2626" },
         icon: <Paintbrush size={19} />,
         className: `text-sm`,
