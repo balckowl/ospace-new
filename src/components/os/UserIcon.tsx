@@ -105,7 +105,7 @@ export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
                   onClick={() => handleSignOut()}
                 >
                   <LogOut size={15} />
-                  {t("common.sign_out")}
+                  {t("sign_out")}
                 </button>
               </div>
             ) : (
