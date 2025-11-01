@@ -1172,7 +1172,7 @@ export default function MacosDesktop({
         },
       });
       if (!res.ok) {
-        toast("Desktop update failed", {
+        toast(t("failed.desktop"), {
           style: { color: "#dc2626" },
           icon: <Megaphone size={19} />,
         });
@@ -1182,11 +1182,11 @@ export default function MacosDesktop({
         return;
       }
       onDesktopUpdate?.(desktopById.id, { state });
-      toast("Desktop state saved", {
+      toast(t("success.desktop"), {
         icon: <Megaphone size={19} />,
       });
     } catch {
-      toast("Desktop update failed", {
+      toast(t("failed.desktop"), {
         style: { color: "#dc2626" },
         icon: <Megaphone size={19} />,
       });
@@ -1201,7 +1201,7 @@ export default function MacosDesktop({
     setApps(cloneApps(originalApps));
     setAppPositions(cloneAppPositions(originalAppPositions));
     setFolderContents(cloneFolderContents(originalFolderContents));
-    toast("Changes discarded", {
+    toast(t("discard.desktop"), {
       icon: <Megaphone size={19} />,
     });
   };
@@ -1611,6 +1611,7 @@ export default function MacosDesktop({
               onSave={createAppWithUrl}
               onCancel={cancelAppCreation}
               visible={appUrlDialog.visible}
+              cancelLabel={t("common.cancel")}
               saveLabel={isLoadingApp ? "Creating..." : t("common.save")}
               isLoadingApp={isLoadingApp}
               title={t("desktop.create_new_app")}
@@ -1850,7 +1851,9 @@ export default function MacosDesktop({
             >
               <div className="flex items-center gap-3 rounded-t-2xl border-b bg-white/90 px-3 py-3">
                 <CircleAlert size={17} />
-                <p className="font-bold text-sm">Unsaved changes</p>
+                <p className="font-bold text-sm">
+                  {t("desktop.unsaved_changes")}
+                </p>
               </div>
               <div className="rounded-b-2xl bg-white/85 px-3 py-3">
                 <div className="flex items-center gap-2">
@@ -1860,14 +1863,14 @@ export default function MacosDesktop({
                     className="w-[120px] rounded-xl"
                     onClick={handleRevertDesktopChanges}
                   >
-                    Revert
+                    {t("common.revert")}
                   </Button>
                   <Button
                     size="sm"
                     className="w-[120px] rounded-xl"
                     onClick={handleSaveDesktop}
                   >
-                    Save
+                    {t("common.save")}
                   </Button>
                 </div>
               </div>

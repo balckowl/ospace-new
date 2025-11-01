@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { signOut } from "@/lib/auth-client";
 import type { FontOptionType } from "@/server/schemas/desktop.schema";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -35,11 +36,13 @@ type Props = {
 
 export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
   const router = useRouter();
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const handleSignOut = async () => {
     try {
       await signOut(isPublic);
     } catch {
-      toast("Failed to sign out. Please try again.", {
+      toast(t("failed.sign_out"), {
         style: { color: "#dc2626" },
       });
     }
@@ -102,7 +105,7 @@ export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
                   onClick={() => handleSignOut()}
                 >
                   <LogOut size={15} />
-                  Sign Out
+                  {t("common.sign_out")}
                 </button>
               </div>
             ) : (
@@ -112,7 +115,7 @@ export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
                   className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-gray-800 text-md transition-colors hover:bg-gray-800/10"
                 >
                   <LogIn size={15} />
-                  Sign In
+                  {t("common.sign_in")}
                 </Link>
                 <button
                   type="button"
@@ -120,7 +123,7 @@ export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
                   onClick={() => router.push("/" as Route)}
                 >
                   <Leaf size={15} />
-                  Top Page
+                  {t("top_page")}
                 </button>
               </div>
             )}

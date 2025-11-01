@@ -21,7 +21,7 @@ export default function LockMobileView({ isEdit, lang }: Props) {
     try {
       await signOut(false);
     } catch (error) {
-      toast("Failed to sign out. Please try again.", {
+      toast(t("failed.sign_out"), {
         style: { color: "#dc2626" },
       });
     }

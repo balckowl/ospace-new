@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { authedHono } from "@/lib/hono-client";
 import type { FontOptionType } from "@/server/schemas/desktop.schema";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
@@ -20,6 +21,8 @@ type Props = {
 
 export const PublicSelector = ({ isPublic, setIsPublic, desktopId }: Props) => {
   const [open, setOpen] = useState(false);
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
 
   const handleChange = async (select: boolean) => {
     if (select === isPublic) return;
@@ -34,18 +37,18 @@ export const PublicSelector = ({ isPublic, setIsPublic, desktopId }: Props) => {
         },
       });
       if (!res.ok) {
-        toast("Failed to change public information", {
+        toast(t("failed.public"), {
           style: { color: "#dc2626" },
           icon: select === true ? <LockOpen size={19} /> : <Lock size={19} />,
         });
       }
-      toast("Public information has been changed", {
+      toast(t("success.public"), {
         icon: select === true ? <LockOpen size={19} /> : <Lock size={19} />,
       });
       setIsPublic(select);
       setOpen(false);
     } catch (e) {
-      toast("Failed to change public information", {
+      toast(t("failed.public"), {
         style: { color: "#dc2626" },
         icon: select === true ? <LockOpen size={19} /> : <Lock size={19} />,
       });
@@ -92,7 +95,9 @@ export const PublicSelector = ({ isPublic, setIsPublic, desktopId }: Props) => {
                   className="flex cursor-pointer items-center gap-2 py-0.5"
                 >
                   <RadioGroupItem value="Public" id="public" color="#3b250a" />
-                  <span className="text-sm">Public</span>
+                  <span className="text-sm whitespace-nowrap">
+                    {t("public_selector.public")}
+                  </span>
                 </label>
               </div>
               <div>
@@ -101,7 +106,9 @@ export const PublicSelector = ({ isPublic, setIsPublic, desktopId }: Props) => {
                   className="flex cursor-pointer items-center gap-2 py-0.5"
                 >
                   <RadioGroupItem value="Private" id="private" />
-                  <span className="text-sm">Private</span>
+                  <span className="text-sm whitespace-nowrap">
+                    {t("public_selector.private")}
+                  </span>
                 </label>
               </div>
             </RadioGroup>

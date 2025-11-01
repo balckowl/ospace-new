@@ -1,6 +1,7 @@
 import { AppWindow, Info, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 type Props = {
@@ -9,7 +10,8 @@ type Props = {
 
 export const HelpSelector = ({ getHelpWindow }: Props) => {
   const [open, setOpen] = useState(false);
-
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -29,9 +31,9 @@ export const HelpSelector = ({ getHelpWindow }: Props) => {
           <li>
             <Link
               href="/os/ospace"
-              className="flex w-full items-center justify-between rounded-lg px-[10px] py-[6px] text-sm hover:bg-gray-800/10"
+              className="flex w-full   sitems-center justify-between rounded-lg px-[10px] py-[6px] text-sm hover:bg-gray-800/10"
             >
-              Changelog
+              {t("help_selector.changelog")}
               <SquareArrowOutUpRight size={14} />
             </Link>
           </li>
@@ -43,9 +45,9 @@ export const HelpSelector = ({ getHelpWindow }: Props) => {
                 getHelpWindow();
                 setOpen(false);
               }}
-              className="flex w-full items-center justify-between rounded-lg px-[10px] py-[6px] text-sm hover:bg-gray-800/10"
+              className="flex w-full  items-center justify-between rounded-lg px-[10px] py-[6px] text-sm hover:bg-gray-800/10"
             >
-              Instructions
+              {t("help_selector.instructions")}
               <AppWindow size={14} />
             </button>
           </li>
