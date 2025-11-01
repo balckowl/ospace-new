@@ -74,6 +74,17 @@ import { BrowserWindow } from "./window/BrowserWindow";
 import { FolderWindow } from "./window/FolderWindow";
 import { HelpWindow } from "./window/HelpWindow";
 import { MemoWindow } from "./window/MemoWindow";
+import {
+  cloneAppPositions,
+  cloneApps,
+  cloneFolderContents,
+  createFolderContentsMap,
+  mapAppIconToDesktopApp,
+  mapDesktopAppToAppIcon,
+  mapEntriesToJson,
+  resolveAppColorStyles,
+  type DesktopApp,
+} from "./desktop-utils";
 
 type DesktopWithoutDates = Omit<DesktopStateType, "createdAt" | "updatedAt">;
 
@@ -104,146 +115,11 @@ const FRAME_OVERLAY_Z_INDEX = 2147483646;
 const DESKTOP_FRAME_RADIUS = "1rem";
 const FRAME_OVERLAY_COLOR = "var(--background, #fff)";
 
-type DesktopApp = DesktopStateType["state"]["appItems"][number];
-
 const ICON_COMPONENTS: Record<DesktopApp["iconKey"], LucideIcon> = {
   StickyNote,
   Globe,
   FolderIcon,
 };
-
-const mapDesktopAppToAppIcon = (app: DesktopApp): AppIcon => {
-  switch (app.type) {
-    case "website":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        name: app.name,
-        type: "website",
-        url: app.url,
-        favicon: app.favicon,
-      };
-    case "memo":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        name: app.name,
-        type: "memo",
-        content: app.content,
-      };
-    case "folder":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        name: app.name,
-        type: "folder",
-      };
-    case "stamp":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "stamp",
-        stampType: app.stampType,
-        stampText: app.stampText,
-      };
-    default: {
-      const _exhaustiveCheck: never = app;
-      throw new Error(`Unhandled app type: ${_exhaustiveCheck}`);
-    }
-  }
-};
-
-const mapAppIconToDesktopApp = (app: AppIcon): DesktopApp => {
-  switch (app.type) {
-    case "website":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "website",
-        name: app.name,
-        url: app.url ?? "",
-        favicon: app.favicon ?? "",
-      };
-    case "memo":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "memo",
-        name: app.name,
-        content: app.content ?? "",
-      };
-    case "folder":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "folder",
-        name: app.name,
-      };
-    case "stamp":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "stamp",
-        stampType: app.stampType,
-        stampText: app.stampText ?? "",
-      };
-    default: {
-      const _exhaustiveCheck: never = app;
-      throw new Error(`Unhandled app type: ${_exhaustiveCheck}`);
-    }
-  }
-};
-
-const cloneApps = (appsToClone: AppIcon[]) =>
-  appsToClone.map((app) => ({ ...app }));
-
-const cloneAppPositions = (positions: Map<string, GridPosition>) =>
-  new Map<string, GridPosition>(
-    Array.from(positions.entries(), ([key, value]) => [key, { ...value }]),
-  );
-
-const createFolderContentsMap = (data: Record<string, string[]>) =>
-  new Map<string, string[]>(
-    Object.entries(data).map(([key, value]) => [key, [...value]]),
-  );
-
-const resolveAppColorStyles = (
-  color: string,
-): {
-  className: string;
-  style: CSSProperties | undefined;
-} => {
-  if (!color) {
-    return { className: "", style: undefined };
-  }
-
-  if (color.startsWith("bg-")) {
-    return { className: color, style: undefined };
-  }
-
-  return {
-    className: "",
-    style: { background: color },
-  };
-};
-
-const cloneFolderContents = (contents: Map<string, string[]>) =>
-  new Map<string, string[]>(
-    Array.from(contents.entries(), ([key, value]) => [key, [...value]]),
-  );
-
-const mapEntriesToJson = (contents: Map<string, string[]>) =>
-  JSON.stringify(
-    Array.from(contents.entries(), ([key, value]) => [key, [...value]]),
-  );
 
 export default function MacosDesktop({
   desktopById,
