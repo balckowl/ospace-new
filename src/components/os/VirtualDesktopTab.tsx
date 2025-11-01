@@ -17,13 +17,12 @@ import Desktop from "./Desktop";
 import VirtualDesktopDialog from "./dialog/VirtualDesktopDialog";
 import { TabContextMenu } from "./TabContextMenu";
 import type { CurrentUserType } from "./types";
+import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 
 export type DesktopWithoutDates = Omit<
   DesktopStateType,
   "createdAt" | "updatedAt"
 >;
-
-const PINNED_PANEL_WIDTH = 220;
 
 const isSameOrder = (list: DesktopWithoutDates[], order: string[]): boolean => {
   if (list.length !== order.length) {

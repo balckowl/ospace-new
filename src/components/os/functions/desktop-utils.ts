@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { DesktopStateType } from "@/server/schemas/desktop.schema";
-import type { AppIcon, GridPosition } from "../os/types";
+import type { AppIcon, GridPosition } from "../types";
 
 export type DesktopApp = DesktopStateType["state"]["appItems"][number];
 

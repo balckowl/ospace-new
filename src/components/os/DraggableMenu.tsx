@@ -20,9 +20,9 @@ import { FontSelector } from "./FontSelector";
 import { HelpSelector } from "./HelpSelector";
 import { PublicSelector } from "./PublicSelector";
 import type { HelpWindowType } from "./types";
+import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 
 const DRAG_MARGIN = 100;
-const PINNED_PANEL_WIDTH = 220;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);

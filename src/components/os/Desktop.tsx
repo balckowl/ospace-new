@@ -84,7 +84,16 @@ import {
   mapEntriesToJson,
   resolveAppColorStyles,
   type DesktopApp,
-} from "./desktop-utils";
+} from "./functions/desktop-utils";
+import {
+  DESKTOP_FRAME_RADIUS,
+  FRAME_OVERLAY_COLOR,
+  FRAME_OVERLAY_Z_INDEX,
+  GRID_COLS,
+  GRID_ROWS,
+  PINNED_DESKTOP_PADDING,
+  PINNED_PANEL_WIDTH,
+} from "./constants/desktop";
 
 type DesktopWithoutDates = Omit<DesktopStateType, "createdAt" | "updatedAt">;
 
@@ -106,14 +115,6 @@ const lobster = Lobster({ subsets: ["latin"], weight: "400" });
 const allan = Allan({ subsets: ["latin"], weight: "400" });
 const lora = Lora({ subsets: ["latin"] });
 const comfortea = Comfortaa({ subsets: ["latin"] });
-
-const GRID_COLS = 6;
-const GRID_ROWS = 8;
-const PINNED_PANEL_WIDTH = 220;
-const PINNED_DESKTOP_PADDING = 12;
-const FRAME_OVERLAY_Z_INDEX = 2147483646;
-const DESKTOP_FRAME_RADIUS = "1rem";
-const FRAME_OVERLAY_COLOR = "var(--background, #fff)";
 
 const ICON_COMPONENTS: Record<DesktopApp["iconKey"], LucideIcon> = {
   StickyNote,
