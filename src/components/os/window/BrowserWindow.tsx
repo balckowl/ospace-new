@@ -214,10 +214,7 @@ export function BrowserWindow({
         </div>
       </WindowHeader>
 
-      <div
-        className="relative h-[calc(100%-40px)] flex-1 px-1.5 pb-1.5 backdrop-blur-lg"
-        style={{ background: window.color }}
-      >
+      <div className="relative h-[calc(100%-40px)] flex-1 px-1.5 pb-1.5 backdrop-blur-lg bg-white/90">
         <iframe
           key={frameKey}
           src={window.url}

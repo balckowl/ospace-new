@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import type { CSSProperties, DragEvent } from "react";
+import type { DragEvent } from "react";
 import { useState } from "react";
 import type { FontOptionType } from "@/server/schemas/desktop.schema";
 import type { AppIcon, FolderWindowType } from "../types";
@@ -22,26 +22,6 @@ const ICON_COMPONENTS: Record<AppIcon["iconKey"], LucideIcon> = {
   StickyNote,
   Globe,
   FolderIcon,
-};
-
-const getAppColorStyles = (
-  color: string | undefined,
-): {
-  className: string;
-  style: CSSProperties | undefined;
-} => {
-  if (!color) {
-    return { className: "", style: undefined };
-  }
-
-  if (color.startsWith("bg-")) {
-    return { className: color, style: undefined };
-  }
-
-  return {
-    className: "",
-    style: { background: color },
-  };
 };
 
 export function FolderWindow({
@@ -230,7 +210,6 @@ export function FolderWindow({
         currentFont={currentFont}
         title={window.title}
         getFontStyle={getFontStyle}
-        accentColor={window.color}
       >
         {/* クローズ */}
         <button
@@ -246,10 +225,7 @@ export function FolderWindow({
       </WindowHeader>
 
       {/* Folder Content */}
-      <div
-        className="h-[calc(100%-40px)] flex-1 overflow-auto px-1.5 pb-1.5 backdrop-blur-lg"
-        style={{ background: window.color }}
-      >
+      <div className="h-[calc(100%-40px)] flex-1 overflow-auto px-1.5 pb-1.5 backdrop-blur-lg bg-white/90">
         <div
           className={`relative h-full rounded-xl py-4 transition ${
             isExternalDragOver ? "ring-2 ring-white/70" : ""
@@ -262,7 +238,7 @@ export function FolderWindow({
         >
           <div
             className="pointer-events-none absolute inset-0 rounded-xl"
-            style={{ background: window.color, opacity: 0.35 }}
+            style={{ opacity: 0 }}
             aria-hidden="true"
           />
           <div
@@ -274,17 +250,7 @@ export function FolderWindow({
             <div
               className="flex h-full items-center justify-center text-center"
               onContextMenu={(e) => onEmptyAreaContextMenu(e, window.id)}
-            >
-              <div>
-                <FolderIcon size={48} className="mx-auto mb-4 text-white" />
-                <p className="text-white">This folder is empty.</p>
-                {isEditable && (
-                  <p className="text-sm text-white">
-                    Drag apps here to organize them.
-                  </p>
-                )}
-              </div>
-            </div>
+            ></div>
           ) : (
             <div
               className="grid gap-0"
@@ -346,13 +312,9 @@ export function FolderWindow({
                         >
                           <div className="relative mb-1.5">
                             {(() => {
-                              const { className, style } = getAppColorStyles(
-                                app.color,
-                              );
                               return (
                                 <div
-                                  className={`relative flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg ${className}`}
-                                  style={style}
+                                  className={`relative flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg bg-white/90`}
                                   onDragOver={(e) => {
                                     if (
                                       !isEditable ||

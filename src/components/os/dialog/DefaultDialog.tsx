@@ -54,9 +54,6 @@ export default function DefaultDialog({
   cancelLabel = "Cancel",
   saveLabel = "Save",
   placeholder,
-  selectedColor,
-  onColorSelect,
-  colorOptions,
   panelOffsetRight = 0,
   usePinnedLayout = false,
 }: Props) {
@@ -66,12 +63,6 @@ export default function DefaultDialog({
       name: nameInput,
     },
   });
-
-  const availableColors =
-    colorOptions && colorOptions.length > 0
-      ? colorOptions
-      : DEFAULT_DIALOG_COLORS;
-  const shouldShowColorPicker = Boolean(onColorSelect);
 
   const currentName = form.watch("name");
 
@@ -110,7 +101,6 @@ export default function DefaultDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    {/* <FormLabel>{formLabel}</FormLabel> */}
                     <FormControl>
                       <div className="border-b-[1.5px]">
                         <input
@@ -129,32 +119,6 @@ export default function DefaultDialog({
                 )}
               />
             </div>
-            {shouldShowColorPicker && (
-              <div className="mx-5">
-                <p className="mb-2 px-1 font-medium text-gray-600 text-sm">
-                  Color
-                </p>
-                <div className="flex items-center gap-3">
-                  {availableColors.map((color) => {
-                    const isSelected = selectedColor === color;
-                    return (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => onColorSelect?.(color)}
-                        className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all duration-150 ${isSelected ? "scale-110 border-gray-900 shadow-lg" : "border-transparent hover:scale-105 hover:border-gray-400/70"}`}
-                        style={{ background: color }}
-                        aria-label={`Select color ${color}`}
-                      >
-                        {isSelected && (
-                          <span className="block h-3.5 w-3.5 rounded-full border-2 border-white/80" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
             <div className="mt-6 flex justify-end space-x-3 px-5 pb-5">
               <Button
                 onClick={onCancel}

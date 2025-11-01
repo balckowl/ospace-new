@@ -1,6 +1,7 @@
 "use client";
 
-import { Pin, PinOff, Plus } from "lucide-react";
+import { Check, Loader2, Lock, Pin, PinOff, Plus } from "lucide-react";
+import { useQueryState } from "nuqs";
 import {
   type DragEvent,
   type FocusEvent,
@@ -12,10 +13,12 @@ import {
 } from "react";
 import { authedHono } from "@/lib/hono-client";
 import type { DesktopStateType } from "@/server/schemas/desktop.schema";
+import { Button } from "../ui/button";
 import { backgroundOptions } from "./BackgroundImage";
 import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 import Desktop from "./Desktop";
 import VirtualDesktopDialog from "./dialog/VirtualDesktopDialog";
+import { truncate } from "./functions/truncate";
 import { TabContextMenu } from "./TabContextMenu";
 import type { CurrentUserType } from "./types";
 
@@ -124,6 +127,8 @@ const buildDesktopExport = (desktop: DesktopWithoutDates) => {
   return lines.join("\n");
 };
 
+const MAX_DESKTOP_COUNT = 4;
+
 type Props = {
   desktopList: DesktopWithoutDates[];
   osName: string;
@@ -137,7 +142,7 @@ export default function VirtualDesktopTab({
   isEdit,
   currentUser,
 }: Props) {
-  const [tabId, setTabId] = useState(() => desktopList[0]?.id ?? "");
+  const [tabId, setTabId] = useQueryState("desktopId");
   const [desktops, setDesktops] = useState<DesktopWithoutDates[]>(desktopList);
   const originalOrderRef = useRef<string[]>(desktopList.map((d) => d.id));
   const [orderChanged, setOrderChanged] = useState(false);
@@ -153,6 +158,7 @@ export default function VirtualDesktopTab({
     targetDesktopId: "",
     initialName: "",
   }));
+  const [isLoading, setIsLoading] = useState(false);
   const [isMouseNearEdge, setIsMouseNearEdge] = useState(false);
   const [isHoveringTabs, setIsHoveringTabs] = useState(false);
   const [hasKeyboardFocus, setHasKeyboardFocus] = useState(false);
@@ -254,6 +260,7 @@ export default function VirtualDesktopTab({
     setDesktops(desktopList);
     originalOrderRef.current = desktopList.map((d) => d.id);
     setOrderChanged(false);
+    previousRectsRef.current.clear();
   }, [desktopList]);
 
   useLayoutEffect(() => {
@@ -323,10 +330,22 @@ export default function VirtualDesktopTab({
   }, [desktops]);
 
   useEffect(() => {
-    if (!desktops.some((d) => d.id === tabId)) {
-      setTabId(desktops[0]?.id ?? "");
+    if (desktops.length === 0) {
+      if (tabId !== null) {
+        void setTabId(null);
+      }
+      return;
     }
-  }, [desktops, tabId]);
+
+    if (tabId == null || tabId === "") {
+      void setTabId(desktops[0].id);
+      return;
+    }
+
+    if (!desktops.some((d) => d.id === tabId)) {
+      void setTabId(desktops[0].id);
+    }
+  }, [desktops, tabId, setTabId]);
 
   const handleDragStart = useCallback(
     (event: DragEvent<HTMLButtonElement>, desktopId: string) => {
@@ -495,6 +514,9 @@ export default function VirtualDesktopTab({
 
   const current = desktops.find((d) => d.id === tabId) ?? desktops[0];
 
+  const canDeleteDesktop = desktops.length > 1 && !orderChanged;
+  const canAddDesktop = isEdit && desktops.length < MAX_DESKTOP_COUNT;
+
   const showTabs =
     isPinned ||
     isMouseNearEdge ||
@@ -528,7 +550,7 @@ export default function VirtualDesktopTab({
         setDesktops((prev) => {
           const updated = prev.filter((desktop) => desktop.id !== deletedId);
           if (deletedId === tabId) {
-            setTabId(updated[0]?.id ?? "");
+            void setTabId(updated[0]?.id ?? null);
           }
           return updated;
         });
@@ -575,12 +597,14 @@ export default function VirtualDesktopTab({
   };
 
   const handleSaveOrder = async () => {
+    setIsLoading(true);
     const orderedIds = desktops.map((desktop) => desktop.id);
     await authedHono.api.desktops["save-order"].$post({
       json: {
         desktopIds: orderedIds,
       },
     });
+    setIsLoading(false);
     originalOrderRef.current = orderedIds;
     setOrderChanged(false);
   };
@@ -616,12 +640,12 @@ export default function VirtualDesktopTab({
 
   return (
     <div
-      className="relative h-full transition-[padding-right] duration-300 ease-in-out"
-      style={{ paddingRight: isPinned ? "220px" : 0 }}
+      className="relative transition-[padding-right] duration-300 ease-in-out bg-white/20"
+      style={{ paddingRight: isPinned ? `${PINNED_PANEL_WIDTH}px` : 0 }}
     >
       <div
         className={[
-          "fixed bottom-0 top-0 right-0 z-6000 flex w-[220px] flex-col gap-3 border-black/5 bg-white px-4 py-6 backdrop-blur transition-all duration-300 ease-in-out will-change-transform",
+          "fixed bottom-0 top-0 px-7 right-0 z-6000 flex w-[270px] rounded-l-2xl  flex-col gap-3 border-black/5 bg-white/90 py-6 backdrop-blur transition-all duration-300 ease-in-out will-change-transform",
           showTabs ? "translate-x-0 opacity-100" : "translate-x-full opacity-0",
           showTabs ? "pointer-events-auto" : "pointer-events-none",
           isPinned ? "" : "border-l shadow-lg",
@@ -645,14 +669,14 @@ export default function VirtualDesktopTab({
               return next;
             })
           }
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 text-black/70 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 self-start"
+          className="mb-2 cursor-pointer flex h-9 w-9 items-center justify-center rounded-lg text-black/70 transition duration-200 ease-out hover:scale-105 hover:bg-gray-800/10"
           aria-label={isPinned ? "Unpin tab panel" : "Pin tab panel"}
           aria-pressed={isPinned}
         >
-          {isPinned ? <PinOff size={16} /> : <Pin size={16} />}
+          {isPinned ? <PinOff size={19} /> : <Pin size={19} />}
         </button>
         <div
-          className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto"
+          className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto"
           role="tablist"
           aria-label="Virtual desktops"
           aria-orientation="vertical"
@@ -661,6 +685,7 @@ export default function VirtualDesktopTab({
             const background = backgroundOptions.find(
               (opt) => opt.name === d.background,
             )?.value;
+            const isActiveDesktop = d.id === current.id;
 
             const getBackgroundStyle = () => {
               if (background?.startsWith("http")) {
@@ -681,7 +706,7 @@ export default function VirtualDesktopTab({
                 key={d.id}
                 type="button"
                 role="tab"
-                aria-selected={d.id === current.id}
+                aria-selected={isActiveDesktop}
                 draggable
                 ref={(node) => {
                   if (node) {
@@ -692,7 +717,7 @@ export default function VirtualDesktopTab({
                   }
                 }}
                 onClick={(event) => {
-                  setTabId(d.id);
+                  void setTabId(d.id);
                   if (event.detail !== 0) {
                     setHasKeyboardFocus(false);
                   }
@@ -714,43 +739,60 @@ export default function VirtualDesktopTab({
                   });
                 }}
                 className={[
-                  "group cursor-grab rounded-xl border border-black/10 px-2 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-                  d.id === current.id
-                    ? "bg-white text-black shadow-sm"
-                    : "text-black/70 hover:bg-white/70",
+                  "group cursor-grab text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+                  isActiveDesktop ? " text-black" : "text-black/70",
                   draggedDesktopId === d.id ? "cursor-grabbing opacity-70" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
               >
-                <p>{d.name}</p>
-                <div
-                  aria-hidden
-                  className="relative w-full h-20 overflow-hidden rounded-lg border border-black/10 shadow-inner"
-                  style={getBackgroundStyle()}
-                />
+                <div className="relative h-30 mb-1">
+                  <div
+                    className={["w-full h-full rounded-2xl transition-colors"]
+                      .filter(Boolean)
+                      .join(" ")}
+                    style={getBackgroundStyle()}
+                  />
+                  {isActiveDesktop && (
+                    <div className="absolute inset-0 flex rounded-2xl items-center justify-center bg-blue-500/20">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-black">
+                        <Check width={17} height={17} color="white" />
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute bottom-3 right-3">
+                    {!d.isPublic && (
+                      <Lock strokeWidth={2} size={20} color="white" />
+                    )}
+                  </div>
+                </div>
+                <p className="text-center">{truncate(d.name, 10)}</p>
               </button>
             );
           })}
         </div>
         {orderChanged ? (
-          <button
+          <Button
             type="button"
             onClick={handleSaveOrder}
-            className="flex h-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            disabled={isLoading}
+            className="flex h-9 items-center cursor-pointer justify-center rounded-full text-sm font-semibold text-white"
           >
+            {isLoading && (
+              <Loader2 className="animate-spin" width={15} height={15} />
+            )}{" "}
             Save order
-          </button>
+          </Button>
         ) : null}
-        {isEdit && (
-          <button
+        {canAddDesktop && (
+          <Button
             type="button"
             onClick={handleAddDesktop}
-            className="flex h-9 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            className="flex h-9 bg-white cursor-pointer items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             aria-label="Add desktop"
           >
             <Plus size={16} />
-          </button>
+          </Button>
         )}
       </div>
       <Desktop
@@ -776,12 +818,10 @@ export default function VirtualDesktopTab({
         ref={contextMenuRef}
         visible={tabContextMenu.visible}
         position={menuPosition}
-        desktopName={tabContextMenu.desktopName}
         onDownload={handleDownloadDesktop}
         onEdit={handleEditDesktopRequest}
         onDelete={handleDeleteDesktopRequest}
-        onClose={hideTabContextMenu}
-        showDelete={desktops.length > 1 && !orderChanged}
+        showDelete={canDeleteDesktop}
       />
     </div>
   );

@@ -15,6 +15,7 @@ import type {
   BackgroundOptionType,
   FontOptionType,
 } from "@/server/schemas/desktop.schema";
+import { litteOne } from "../lp/hero/Hero";
 import { BackgroundSelector } from "./BackgroundSelector";
 import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 import { FontSelector } from "./FontSelector";
@@ -210,7 +211,9 @@ export const DraggableMenu = ({
             className="pointer-events-none"
           />
         </div>
-        <div className="flex items-center font-semibold text-md text-white/70 uppercase tracking-wide">
+        <div
+          className={`${litteOne.className} flex items-center font-semibold text-md text-white/70 uppercase tracking-wide`}
+        >
           {osName}
         </div>
 

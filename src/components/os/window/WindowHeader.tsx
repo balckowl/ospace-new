@@ -14,14 +14,10 @@ export default function WindowHeader({
   title,
   currentFont,
   getFontStyle,
-  accentColor,
 }: Props) {
-  const hasAccent = Boolean(accentColor);
-
   return (
     <div
-      className={`${getFontStyle(currentFont)} window-header flex h-10 cursor-grab items-center justify-between px-2 backdrop-blur-lg active:cursor-grabbing ${hasAccent ? "text-black" : "bg-white/90"}`}
-      style={hasAccent ? { background: accentColor ?? undefined } : undefined}
+      className={`${getFontStyle(currentFont)} window-header flex h-10 cursor-grab items-center justify-between px-2 backdrop-blur-lg bg-white/90`}
     >
       <div className="flex items-center">
         <div className="rounded-sm px-2 font-bold text-black text-sm">

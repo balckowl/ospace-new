@@ -34,7 +34,7 @@ export default function VirtualDesktopDialog({
   initialName = "",
   title = "Virtual Desktop",
   submitLabel = "Save",
-  panelOffsetRight = 0,
+  panelOffsetRight: _panelOffsetRight = 0,
   usePinnedLayout = false,
 }: Props) {
   const form = useForm<nameSchemaType>({
@@ -63,9 +63,8 @@ export default function VirtualDesktopDialog({
     <div
       className={cn(
         "dialog fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm",
-        usePinnedLayout && "p-6",
       )}
-      style={{ zIndex: 7000, right: panelOffsetRight }}
+      style={{ zIndex: 10000 }}
     >
       <div
         className={cn(
