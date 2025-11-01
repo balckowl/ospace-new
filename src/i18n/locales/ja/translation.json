@@ -94,5 +94,8 @@
   },
   "edit_stamp_dialog": {
     "title": "スタンプテキストを編集"
+  },
+  "mobile_lock_view": {
+    "text": "この画面サイズはサポートされていません。"
   }
 }

@@ -41,7 +41,7 @@ export default function LockMobileView({ isEdit, lang }: Props) {
         <div className="relative z-10 flex h-[100dvh] items-center justify-center text-white">
           <div className="text-center">
             <TriangleAlert width={35} height={35} className="mx-auto mb-3" />
-            <p className="mb-3">This screen size is not supported.</p>
+            <p className="mb-3">{t("mobile_lock_view.text")}</p>
             {isEdit ? (
               <Button className="rounded-xl" onClick={() => handleSignOut()}>
                 <LogOut size={15} className="mr-1" />

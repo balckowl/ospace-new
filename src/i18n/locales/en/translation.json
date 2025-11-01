@@ -94,5 +94,8 @@
   },
   "edit_stamp_dialog": {
     "title": "Edit Stamp Text"
+  },
+  "mobile_lock_view": {
+    "text": "This screen size is not supported."
   }
 }
