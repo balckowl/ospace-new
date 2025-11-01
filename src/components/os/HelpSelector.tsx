@@ -1,4 +1,5 @@
 import { AppWindow, Info, SquareArrowOutUpRight } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useState } from "react";
 import { useLanguage, useTranslation } from "@/i18n/client";
@@ -30,8 +31,8 @@ export const HelpSelector = ({ getHelpWindow }: Props) => {
         <ul>
           <li>
             <Link
-              href="/os/ospace"
-              className="flex w-full   sitems-center justify-between rounded-lg px-[10px] py-[6px] text-sm hover:bg-gray-800/10"
+              href={"/os/ospace" as Route}
+              className="flex w-full   sitems-center justify-between rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-800/10"
             >
               {t("help_selector.changelog")}
               <SquareArrowOutUpRight size={14} />
@@ -45,7 +46,7 @@ export const HelpSelector = ({ getHelpWindow }: Props) => {
                 getHelpWindow();
                 setOpen(false);
               }}
-              className="flex w-full  items-center justify-between rounded-lg px-[10px] py-[6px] text-sm hover:bg-gray-800/10"
+              className="flex w-full  items-center justify-between rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-800/10"
             >
               {t("help_selector.instructions")}
               <AppWindow size={14} />

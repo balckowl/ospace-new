@@ -10,14 +10,14 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: {
-    default: "OSpace",
-    template: `%s | OSpace`,
+    default: "OSPACE",
+    template: `%s | OSPACE`,
   },
   description: "Create your very own OS on the web.",
   openGraph: {
     title: {
-      default: "OSpace",
-      template: `%s | OSpace`,
+      default: "OSPACE",
+      template: `%s | OSPACE`,
     },
     description: "Create your very own OS on the web.",
   },
@@ -33,12 +33,7 @@ export default async function RootLayout({
   const { lang } = await params;
   return (
     <html lang={lang}>
-      <body
-        className={cn(
-          inter.className,
-          "bg-black overflow-y-hidden min-h-screen",
-        )}
-      >
+      <body className={cn(inter.className, "bg-black")}>
         <NuqsAdapter>{children}</NuqsAdapter>
       </body>
     </html>
