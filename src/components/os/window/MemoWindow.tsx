@@ -75,14 +75,12 @@ export function MemoWindow({
       onSizeChange={onSizeChange}
       onPositionChange={onPositionChange}
     >
-      {/* Window Header */}
       <WindowHeader
         getFontStyle={getFontStyle}
         currentFont={currentFont}
         title={window.title}
         accentColor={window.color}
       >
-        {/* クローズ */}
         <button
           onMouseDown={(e) => e.stopPropagation()}
           onClick={onClose}
@@ -94,12 +92,7 @@ export function MemoWindow({
           <X size={17} strokeWidth={2.5} />
         </button>
       </WindowHeader>
-
-      {/* Window Content */}
-      <div
-        className="flex h-[calc(100%-40px)] flex-1 flex-col overflow-y-auto px-1.5 pb-1.5"
-        style={{ background: window.color }}
-      >
+      <div className="flex h-[calc(100%-40px)] flex-1 flex-col overflow-y-auto px-1.5 pb-1.5 bg-white/90 backdrop-blur-lg">
         <div
           className="flex h-full flex-1 flex-col overflow-y-auto rounded-xl bg-white/90 backdrop-blur-sm"
           onMouseDown={handleContentAreaMouseDown}

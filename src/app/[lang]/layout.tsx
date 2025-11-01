@@ -1,8 +1,9 @@
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { env } from "@/env";
+import { cn } from "@/lib/utils";
 import "../globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,7 +33,14 @@ export default async function RootLayout({
   const { lang } = await params;
   return (
     <html lang={lang}>
-      <body className={cn(inter.className, "bg-black")}>{children}</body>
+      <body
+        className={cn(
+          inter.className,
+          "bg-black overflow-y-hidden min-h-screen",
+        )}
+      >
+        <NuqsAdapter>{children}</NuqsAdapter>
+      </body>
     </html>
   );
 }

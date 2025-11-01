@@ -50,9 +50,6 @@ import {
 import { backgroundOptions } from "./BackgroundImage";
 import { ContextMenu } from "./ContextMenu";
 import {
-  DESKTOP_FRAME_RADIUS,
-  FRAME_OVERLAY_COLOR,
-  FRAME_OVERLAY_Z_INDEX,
   GRID_COLS,
   GRID_ROWS,
   PINNED_DESKTOP_PADDING,
@@ -73,7 +70,6 @@ import {
   mapAppIconToDesktopApp,
   mapDesktopAppToAppIcon,
   mapEntriesToJson,
-  resolveAppColorStyles,
 } from "./functions/desktop-utils";
 import { lightDegreeLocalStore } from "./functions/lightDegreeLocalStorage";
 import { useDesktopDragAndDrop } from "./hooks/useDesktopDragAndDrop";
@@ -164,73 +160,6 @@ export default function MacosDesktop({
   const pinnedPaddingStyle: CSSProperties | undefined = framePadding
     ? { padding: framePadding }
     : undefined;
-  const frameOverlayStyle = useMemo<CSSProperties | undefined>(() => {
-    if (framePadding <= 0) return undefined;
-    return {
-      borderRadius: DESKTOP_FRAME_RADIUS,
-      boxShadow: `inset 0 0 0 ${framePadding}px ${FRAME_OVERLAY_COLOR}`,
-      zIndex: FRAME_OVERLAY_Z_INDEX,
-      pointerEvents: "none",
-    };
-  }, [framePadding]);
-
-  const frameCornerStyles = useMemo<
-    Array<{ key: string; style: CSSProperties }>
-  >(() => {
-    if (framePadding <= 0) return [];
-
-    const size = framePadding;
-    const base: CSSProperties = {
-      position: "absolute",
-      width: 0,
-      height: 0,
-      zIndex: FRAME_OVERLAY_Z_INDEX + 1,
-      pointerEvents: "none",
-    };
-
-    return [
-      {
-        key: "top-left",
-        style: {
-          ...base,
-          top: 0,
-          left: 0,
-          borderTop: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
-          borderRight: `${size}px solid transparent`,
-        },
-      },
-      {
-        key: "top-right",
-        style: {
-          ...base,
-          top: 0,
-          right: 0,
-          borderTop: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
-          borderLeft: `${size}px solid transparent`,
-        },
-      },
-      {
-        key: "bottom-left",
-        style: {
-          ...base,
-          bottom: 0,
-          left: 0,
-          borderBottom: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
-          borderRight: `${size}px solid transparent`,
-        },
-      },
-      {
-        key: "bottom-right",
-        style: {
-          ...base,
-          bottom: 0,
-          right: 0,
-          borderBottom: `${size}px solid ${FRAME_OVERLAY_COLOR}`,
-          borderLeft: `${size}px solid transparent`,
-        },
-      },
-    ];
-  }, [framePadding]);
   const [_memoCounter, setMemoCounter] = useState(2);
   const [_folderCounter, setFolderCounter] = useState(1);
   const [positionsInitialized, setPositionsInitialized] = useState(false);
@@ -1505,13 +1434,9 @@ export default function MacosDesktop({
                     className="group flex transform cursor-grab flex-col items-center transition-all duration-200 ease-out active:cursor-grabbing"
                   >
                     {(() => {
-                      const { className, style } = resolveAppColorStyles(
-                        app.color,
-                      );
                       return (
                         <div
-                          className={`relative mb-1.5 flex h-12 w-12 items-center justify-center rounded-2xl shadow-2xl backdrop-blur-sm transition-all duration-200 group-hover:border-white/30 ${className}`}
-                          style={style}
+                          className={`relative flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg mb-1.5`}
                         >
                           {renderAppIcon(app)}
                           {app.type === "website" && app.favicon && (
@@ -1522,16 +1447,16 @@ export default function MacosDesktop({
                           )}
                           {app.type === "folder" &&
                             getFolderAppCount(app.id) > 0 && (
-                              <div className="-top-1.5 -right-1.5 absolute flex h-5 w-5 items-center justify-center rounded-full bg-red-500 font-bold text-white text-xs">
+                              <div className="-top-1.5 -right-1.5 absolute flex h-5 w-5 items-center justify-center rounded-full bg-red-500 font-bold text-white/90 text-xs">
                                 {getFolderAppCount(app.id)}
                               </div>
                             )}
-                          <div className="-z-10 absolute inset-0 rounded-2xl bg-white/80 shadow-2xl backdrop-blur-lg" />
+                          <div className="-z-10 absolute inset-0 rounded-2xl bg-white/90 shadow-2xl" />
                         </div>
                       );
                     })()}
                     <div
-                      className={`mt-1 text-center font-medium text-white text-xs drop-shadow-sm ${getFontStyle(font)}`}
+                      className={`mt-1 text-center font-medium text-white/80 text-xs drop-shadow-sm ${getFontStyle(font)}`}
                     >
                       {truncate(app.name, 20)}
                     </div>
@@ -1549,20 +1474,9 @@ export default function MacosDesktop({
 
   return (
     <div
-      className="relative h-screen overflow-hidden bg-white"
+      className="relative h-screen overflow-hidden bg-gray-100"
       style={pinnedPaddingStyle}
     >
-      {frameOverlayStyle ? (
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={frameOverlayStyle}
-          aria-hidden="true"
-        >
-          {frameCornerStyles.map((corner) => (
-            <div key={corner.key} style={corner.style} aria-hidden="true" />
-          ))}
-        </div>
-      ) : null}
       <div
         className={`${isPanelPinned ? "rounded-2xl" : ""} relative z-45 h-full w-full overflow-hidden`}
         style={getBackgroundStyle()}
@@ -1580,7 +1494,7 @@ export default function MacosDesktop({
                 title: "macos-title",
               },
               style: {
-                right: isPanelPinned ? "220px" : "0px",
+                right: isPanelPinned ? `${PINNED_PANEL_WIDTH}px` : "0px",
               },
             }}
           />
@@ -1917,8 +1831,13 @@ export default function MacosDesktop({
 
           {showDesktopSaveBtn && isEdit && (
             <div
-              className={`fixed ${isPanelPinned ? "right-[calc(220px+24px)]" : "right-6"} bottom-6 text-black text-sm shadow-lg transition`}
-              style={{ zIndex: 2147483647 }}
+              className={`fixed ${isPanelPinned ? "" : "right-6"} bottom-6 text-black text-sm shadow-lg transition`}
+              style={{
+                zIndex: 2147483647,
+                right: isPanelPinned
+                  ? `calc(${PINNED_PANEL_WIDTH}px + 24px)`
+                  : undefined,
+              }}
             >
               <div className="flex items-center gap-3 rounded-t-2xl border-b bg-white/90 px-3 py-3">
                 <CircleAlert size={17} />

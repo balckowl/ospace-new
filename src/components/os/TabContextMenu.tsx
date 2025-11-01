@@ -1,43 +1,31 @@
 "use client";
 
-import { Download, PencilLine, Trash2 } from "lucide-react";
+import { Download, PenTool, Trash2 } from "lucide-react";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 type TabContextMenuProps = {
   visible: boolean;
   position: { x: number; y: number } | null;
-  desktopName: string;
   onDelete: () => void;
   onDownload: () => void;
   onEdit: () => void;
-  onClose: () => void;
   showDelete?: boolean;
 };
 
 export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
   function TabContextMenu(
-    {
-      visible,
-      position,
-      desktopName,
-      onDelete,
-      onDownload,
-      onEdit,
-      onClose,
-      showDelete = true,
-    },
+    { visible, position, onDelete, onDownload, onEdit, showDelete = true },
     ref,
   ) {
     if (!visible || !position) {
       return null;
     }
-
     return (
       <div
         ref={ref}
         className={cn(
-          "fixed z-2147483647 min-w-40 rounded-2xl border border-black/10 bg-white/95 p-1 shadow-xl ring-1 ring-black/5 backdrop-blur",
+          "fixed z-2147483647 w-[150px] rounded-xl  bg-white/90 p-1 shadow-sm backdrop-blur-2xl",
         )}
         style={{
           top: position.y,
@@ -46,19 +34,16 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
         }}
         onContextMenu={(event) => event.preventDefault()}
       >
-        <div className="px-3 py-2 text-xs font-medium text-black/60">
-          {desktopName}
-        </div>
         <button
           type="button"
           onClick={(event) => {
             event.stopPropagation();
             onEdit();
           }}
-          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-black/70 transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-gray-800 text-sm transition-colors hover:bg-gray-800/10"
         >
-          <PencilLine size={16} />
-          Edit Desktop
+          <PenTool size={17} />
+          Edit
         </button>
         <button
           type="button"
@@ -66,10 +51,10 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
             event.stopPropagation();
             onDownload();
           }}
-          className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-black/70 transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-gray-800 text-sm transition-colors hover:bg-gray-800/10"
         >
-          <Download size={16} />
-          Download Notes
+          <Download size={17} />
+          Download
         </button>
         {showDelete && (
           <button
@@ -78,22 +63,12 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
               event.stopPropagation();
               onDelete();
             }}
-            className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+            className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-red-600 text-sm transition-colors hover:bg-red-600/10"
           >
-            <Trash2 size={16} />
-            Delete Desktop
+            <Trash2 size={17} />
+            Delete
           </button>
         )}
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onClose();
-          }}
-          className="mt-1 flex w-full items-center justify-center rounded-xl px-3 py-2 text-sm font-medium text-black/60 transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-        >
-          Cancel
-        </button>
       </div>
     );
   },

@@ -8,6 +8,7 @@ import {
   LogIn,
   LogOut,
 } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -51,7 +52,7 @@ export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
 
   const goToMyOspace = () => {
     if (currentUserInfo?.osName !== osName) {
-      router.push(`/os/${currentUserInfo?.osName}`);
+      router.push(`/os/${currentUserInfo?.osName}` as Route);
     } else {
       setIsOpen(false);
     }
@@ -60,10 +61,7 @@ export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
   return (
     <div className="fixed bottom-[60px] left-10 z-50 flex items-center gap-1 rounded-3xl bg-white/90 p-1">
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenuTrigger
-          asChild
-          className="outline-none focus:outline-none"
-        >
+        <DropdownMenuTrigger className="outline-none focus:outline-none">
           <Avatar>
             <AvatarImage
               src={currentUserInfo?.icon ?? undefined}
@@ -119,7 +117,7 @@ export const UserIcon = ({ isPublic, currentUserInfo, osName }: Props) => {
                 <button
                   type="button"
                   className=" flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-gray-800 text-md transition-colors hover:bg-gray-800/10"
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push("/" as Route)}
                 >
                   <Leaf size={15} />
                   Top Page
