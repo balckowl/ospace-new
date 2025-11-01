@@ -518,6 +518,10 @@ export default function VirtualDesktopTab({
         },
       });
 
+      if (res.status === 500) {
+        throw Error("エラー");
+      }
+
       const data = await res.json();
       const deletedId = data.id;
 
@@ -618,7 +622,7 @@ export default function VirtualDesktopTab({
     >
       <div
         className={[
-          "fixed bottom-0 top-0 right-0 z-6000 flex w-[220px] flex-col gap-3 border-black/5 bg-white/90 px-4 py-6 backdrop-blur transition-all duration-300 ease-in-out will-change-transform",
+          "fixed bottom-0 top-0 right-0 z-6000 flex w-[220px] flex-col gap-3 border-black/5 bg-white px-4 py-6 backdrop-blur transition-all duration-300 ease-in-out will-change-transform",
           showTabs ? "translate-x-0 opacity-100" : "translate-x-full opacity-0",
           showTabs ? "pointer-events-auto" : "pointer-events-none",
           isPinned ? "" : "border-l shadow-lg",
@@ -778,7 +782,7 @@ export default function VirtualDesktopTab({
         onEdit={handleEditDesktopRequest}
         onDelete={handleDeleteDesktopRequest}
         onClose={hideTabContextMenu}
-        showDelete={desktops.length > 1}
+        showDelete={desktops.length > 1 && !orderChanged}
       />
     </div>
   );

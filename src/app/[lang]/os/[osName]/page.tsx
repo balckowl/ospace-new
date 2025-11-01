@@ -36,11 +36,13 @@ export default async function Page({ params }: Props) {
   const { desktopList, isEdit, currentUser } = data;
 
   return (
-    <VirtualDesktopTab
-      desktopList={desktopList}
-      osName={osName}
-      isEdit={isEdit}
-      currentUser={currentUser}
-    />
+    <div className="bg-white">
+      <VirtualDesktopTab
+        desktopList={desktopList}
+        osName={osName}
+        isEdit={isEdit}
+        currentUser={currentUser}
+      />
+    </div>
   );
 }
