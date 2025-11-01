@@ -10,6 +10,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { DesktopSchema } from "@/server/schemas/desktop.schema";
 
@@ -33,10 +34,12 @@ export default function VirtualDesktopDialog({
   save,
   initialName = "",
   title = "Virtual Desktop",
-  submitLabel = "Save",
+  submitLabel,
   panelOffsetRight: _panelOffsetRight = 0,
   usePinnedLayout = false,
 }: Props) {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const form = useForm<nameSchemaType>({
     resolver: valibotResolver(nameSchema),
     defaultValues: {
@@ -86,7 +89,7 @@ export default function VirtualDesktopDialog({
                     <FormControl>
                       <div className="border-b-[1.5px]">
                         <input
-                          placeholder="デスクトップ名を入力"
+                          placeholder={t("virtual_desktop_dialog.placeholder")}
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -106,7 +109,7 @@ export default function VirtualDesktopDialog({
                 className="w-[120px] rounded-xl bg-gray-100 px-4 py-2 font-medium text-gray-700 text-sm transition-colors hover:bg-gray-200"
                 type="button"
               >
-                cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"

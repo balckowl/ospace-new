@@ -2,6 +2,7 @@
 
 import { Download, PenTool, Trash2 } from "lucide-react";
 import { forwardRef } from "react";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 type TabContextMenuProps = {
@@ -18,9 +19,12 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
     { visible, position, onDelete, onDownload, onEdit, showDelete = true },
     ref,
   ) {
+    const { language } = useLanguage();
+    const { t } = useTranslation(language);
     if (!visible || !position) {
       return null;
     }
+
     return (
       <div
         ref={ref}
@@ -43,7 +47,7 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
           className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-gray-800 text-sm transition-colors hover:bg-gray-800/10"
         >
           <PenTool size={17} />
-          Edit
+          {t("common.edit")}
         </button>
         <button
           type="button"
@@ -54,7 +58,7 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
           className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-gray-800 text-sm transition-colors hover:bg-gray-800/10"
         >
           <Download size={17} />
-          Download
+          {t("common.download")}
         </button>
         {showDelete && (
           <button
@@ -66,7 +70,7 @@ export const TabContextMenu = forwardRef<HTMLDivElement, TabContextMenuProps>(
             className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-red-600 text-sm transition-colors hover:bg-red-600/10"
           >
             <Trash2 size={17} />
-            Delete
+            {t("common.delete")}
           </button>
         )}
       </div>

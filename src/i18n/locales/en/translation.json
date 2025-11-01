@@ -1,5 +1,15 @@
 {
   "get_started": "Get Started",
+  "sign_out": "Sign Out",
+  "top_page": "Top Page",
+  "common": {
+    "edit": "Edit",
+    "download": "Download",
+    "delete": "Delete",
+    "update": "Update",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
   "hero": {
     "title": "Launch your very own planet into<1/> the <0>universe</0> of OSPACE."
   },
@@ -52,5 +62,37 @@
     "title": "Your planet \"{{osName}}\" is born",
     "desc": "Begin your journey.",
     "btn": "Explore Now"
+  },
+  "virtual_desktop_tab": {
+    "save": "Save order",
+    "add_desktop": "Add Desktop",
+    "edit_desktop": "Edit Desktop"
+  },
+  "virtual_desktop_dialog": {
+    "placeholder": "Enter desktop name ..."
+  },
+  "context_menu": {
+    "notes": "Notes",
+    "folder": "Folder",
+    "link": "Link",
+    "stamp": "Stamp"
+  },
+  "desktop": {
+    "placeholder": "Enter name...",
+    "create_new_app": "Create New App",
+    "app_placeholder": "https://example.com",
+    "create_new_notes": "Create New Notes",
+    "notes_placeholder": "Enter notes name...",
+    "create_new_folder": "Create New Folder",
+    "folder_placeholder": "Enter folder name...",
+    "editstamp_label": "Hello!!",
+    "default_dialog_title": {
+      "app": "Edit App",
+      "memo": "Edit Notes",
+      "folder": "Edit Folder"
+    }
+  },
+  "edit_stamp_dialog": {
+    "title": "Edit Stamp Text"
   }
 }

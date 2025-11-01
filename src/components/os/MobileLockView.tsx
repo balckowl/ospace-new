@@ -4,16 +4,19 @@ import { Leaf, LogOut, TriangleAlert } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslation } from "@/i18n/client";
 import { signOut } from "@/lib/auth-client";
 import Container from "../lp/layout/Container";
 import { Button } from "../ui/button";
 
 type Props = {
   isEdit: boolean;
+  lang: string;
 };
 
-export default function LockMobileView({ isEdit }: Props) {
+export default function LockMobileView({ isEdit, lang }: Props) {
   const router = useRouter();
+  const { t } = useTranslation(lang);
   const handleSignOut = async () => {
     try {
       await signOut(false);
@@ -42,7 +45,7 @@ export default function LockMobileView({ isEdit }: Props) {
             {isEdit ? (
               <Button className="rounded-xl" onClick={() => handleSignOut()}>
                 <LogOut size={15} className="mr-1" />
-                Sign Out
+                {t("sign_out")}
               </Button>
             ) : (
               <Button
@@ -50,7 +53,7 @@ export default function LockMobileView({ isEdit }: Props) {
                 onClick={() => router.push("/" as Route)}
               >
                 <Leaf size={15} />
-                Top Page
+                {t("top_page")}
               </Button>
             )}
           </div>

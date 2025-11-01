@@ -6,6 +6,7 @@ import {
   StickyNote,
   Trash2,
 } from "lucide-react";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import type { ContextMenuType } from "./types";
 
 type Props = {
@@ -28,6 +29,8 @@ export const ContextMenu = ({
   showFolderNameDialog,
   showSelectStampDialog,
 }: Props) => {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   return (
     <div
       className="context-menu fixed z-50 min-w-[150px] rounded-xl bg-white p-1 shadow-xl"
@@ -52,7 +55,7 @@ export const ContextMenu = ({
             type="button"
           >
             <PenTool size={17} />
-            <p>Edit</p>
+            <p>{t("common.edit")}</p>
           </button>
           <button
             onClick={deleteApp}
@@ -60,7 +63,7 @@ export const ContextMenu = ({
             type="button"
           >
             <Trash2 size={17} />
-            <p>Delete</p>
+            <p>{t("common.delete")}</p>
           </button>
         </>
       ) : (
@@ -71,7 +74,7 @@ export const ContextMenu = ({
             type="button"
           >
             <StickyNote size={17} />
-            <p>Notes</p>
+            <p>{t("context_menu.notes")}</p>
           </button>
           <button
             onClick={showFolderNameDialog}
@@ -79,7 +82,7 @@ export const ContextMenu = ({
             type="button"
           >
             <FolderIcon size={17} />
-            <p>Folder</p>
+            <p>{t("context_menu.folder")}</p>
           </button>
           <button
             onClick={showAppUrlDialog}
@@ -87,7 +90,7 @@ export const ContextMenu = ({
             type="button"
           >
             <Link2 size={17} />
-            <p>Link</p>
+            <p>{t("context_menu.link")}</p>
           </button>
           {!contextMenu.folderId && (
             <button
@@ -96,7 +99,7 @@ export const ContextMenu = ({
               type="button"
             >
               <Smile size={17} />
-              <p>Stamp</p>
+              <p>{t("context_menu.stamp")}</p>
             </button>
           )}
         </>

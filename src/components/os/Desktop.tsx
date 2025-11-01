@@ -22,6 +22,7 @@ import {
 import Image from "next/image";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
+import { useLanguage, useTranslation } from "@/i18n/client";
 import { authedHono } from "@/lib/hono-client";
 import { cn } from "@/lib/utils";
 import type {
@@ -115,6 +116,8 @@ export default function MacosDesktop({
   currentUser,
   isPanelPinned = false,
 }: Props) {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const backgroundImg = useMemo(() => {
     return backgroundOptions.find((opt) => opt.name === desktopById.background);
   }, [desktopById]);
@@ -1572,19 +1575,19 @@ export default function MacosDesktop({
                   onSave={saveEdit}
                   visible={editDialog.visible}
                   onCancel={cancelEdit}
-                  formLabel="Hello!!"
+                  formLabel={t("desktop.editstamp_label")}
                   panelOffsetRight={panelOffsetRight}
                   usePinnedLayout={isPanelPinned}
                 />
               ) : (
                 <DefaultDialog
                   visible={editDialog.visible}
-                  title={`Edit ${editDialog.app.type === "memo" ? "Notes" : editDialog.app.type === "folder" ? "Folder" : "App"}`}
+                  title={`${editDialog.app.type === "memo" ? t("desktop.default_dialog_title.memo") : editDialog.app.type === "folder" ? t("desktop.default_dialog_title.folder") : t("desktop.default_dialog_title.app")}`}
                   onCancel={cancelEdit}
                   onSave={saveEdit}
                   dialogZIndex={nextzIndex}
                   dialogClassName="edit-dialog"
-                  placeholder="Enter name..."
+                  placeholder={t("desktop.placeholder")}
                   nameInput={editDialog.newName}
                   changeNameInput={changeNameEditDialog}
                   selectedColor={editDialog.newColor}
@@ -1592,6 +1595,8 @@ export default function MacosDesktop({
                   colorOptions={DEFAULT_DIALOG_COLORS}
                   panelOffsetRight={panelOffsetRight}
                   usePinnedLayout={isPanelPinned}
+                  saveLabel={t("common.save")}
+                  cancelLabel={t("common.cancel")}
                 />
               )}
             </div>
@@ -1606,10 +1611,10 @@ export default function MacosDesktop({
               onSave={createAppWithUrl}
               onCancel={cancelAppCreation}
               visible={appUrlDialog.visible}
-              saveLabel={isLoadingApp ? "Creating..." : "Save"}
+              saveLabel={isLoadingApp ? "Creating..." : t("common.save")}
               isLoadingApp={isLoadingApp}
-              title="Create New App"
-              placeholder="https://example.com"
+              title={t("desktop.create_new_app")}
+              placeholder={t("desktop.app_placeholder")}
               panelOffsetRight={panelOffsetRight}
               usePinnedLayout={isPanelPinned}
               selectedColor={appColor}
@@ -1627,13 +1632,15 @@ export default function MacosDesktop({
               onSave={createMemoWithName}
               onCancel={cancelMemoCreation}
               visible={memoNameDialog.visible}
-              title="Create New Notes"
-              placeholder="Enter notes name..."
+              title={t("desktop.create_new_notes")}
+              placeholder={t("desktop.notes_placeholder")}
               panelOffsetRight={panelOffsetRight}
               usePinnedLayout={isPanelPinned}
               selectedColor={memoColor}
               onColorSelect={setMemoColor}
               colorOptions={DEFAULT_DIALOG_COLORS}
+              saveLabel={t("common.save")}
+              cancelLabel={t("common.cancel")}
             />
           )}
 
@@ -1646,13 +1653,15 @@ export default function MacosDesktop({
               onSave={createFolderWithName}
               onCancel={cancelFolderCreation}
               visible={folderNameDialog.visible}
-              title="Create New Folder"
-              placeholder="Enter folder name..."
+              title={t("desktop.create_new_folder")}
+              placeholder={t("desktop.folder_placeholder")}
               panelOffsetRight={panelOffsetRight}
               usePinnedLayout={isPanelPinned}
               selectedColor={folderColor}
               onColorSelect={setFolderColor}
               colorOptions={DEFAULT_DIALOG_COLORS}
+              saveLabel={t("common.save")}
+              cancelLabel={t("common.cancel")}
             />
           )}
 
