@@ -160,6 +160,10 @@
   }
 }
 
+button {
+  cursor: pointer;
+}
+
 [data-sonner-toast].macos-toast {
   width: calc(120px * 2 + 12px * 3) !important;
   border-radius: 16px !important;

@@ -1474,7 +1474,7 @@ export default function MacosDesktop({
 
   return (
     <div
-      className="relative h-screen overflow-hidden bg-white/20"
+      className="relative h-screen overflow-hidden bg-gray-100"
       style={pinnedPaddingStyle}
     >
       <div

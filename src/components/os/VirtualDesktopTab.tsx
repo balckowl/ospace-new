@@ -640,7 +640,7 @@ export default function VirtualDesktopTab({
 
   return (
     <div
-      className="relative transition-[padding-right] duration-300 ease-in-out bg-white/20"
+      className="relative transition-[padding-right] duration-300 ease-in-out bg-gray-100"
       style={{ paddingRight: isPinned ? `${PINNED_PANEL_WIDTH}px` : 0 }}
     >
       <div
