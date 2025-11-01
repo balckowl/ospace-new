@@ -33,24 +33,17 @@ import { cn } from "@/lib/utils";
 import type {
   BackgroundOptionType,
   DesktopStateType,
-  FolderAppType,
   FontOptionType,
-  MemoAppType,
-  WebsiteAppType,
 } from "@/server/schemas/desktop.schema";
 import type {
   AppIcon,
   AppUrlDialog,
-  BrowserWindowType,
   ContextMenuType,
   CurrentUserType,
   EditDialog,
   FolderNameDialog,
-  FolderWindowType,
   GridPosition,
-  HelpWindowType,
   MemoNameDialog,
-  MemoWindowType,
   SelectStampDialog,
 } from "../os/types";
 import { Button } from "../ui/button";
@@ -89,6 +82,7 @@ import {
   resolveAppColorStyles,
 } from "./functions/desktop-utils";
 import { lightDegreeLocalStore } from "./functions/lightDegreeLocalStorage";
+import { useDesktopWindows } from "./hooks/useDesktopWindows";
 import { UserIcon } from "./UserIcon";
 import { BrowserWindow } from "./window/BrowserWindow";
 import { FolderWindow } from "./window/FolderWindow";
@@ -147,9 +141,27 @@ export default function MacosDesktop({
     existingApp: null,
     folderId: null,
   });
-  const [memoWindows, setMemoWindows] = useState<MemoWindowType[]>([]);
-  const [browserWindows, setBrowserWindows] = useState<BrowserWindowType[]>([]);
-  const [folderWindows, setFolderWindows] = useState<FolderWindowType[]>([]);
+  const {
+    nextzIndex,
+    memoWindows,
+    browserWindows,
+    folderWindows,
+    helpWindow,
+    setMemoWindows,
+    setBrowserWindows,
+    setFolderWindows,
+    setHelpWindow,
+    openMemo,
+    openBrowser,
+    openFolder,
+    closeMemoWindow,
+    closeBrowserWindow,
+    closeFolderWindow,
+    bringHelpWindowToFront,
+    bringMemoToFront,
+    bringBrowserToFront,
+    bringFolderToFront,
+  } = useDesktopWindows();
   const openFolderIds = useMemo(
     () => new Set(folderWindows.map((window) => window.id)),
     [folderWindows],
@@ -226,7 +238,6 @@ export default function MacosDesktop({
       },
     ];
   }, [framePadding]);
-  const [nextzIndex, setNextzIndex] = useState(1000);
   const [_memoCounter, setMemoCounter] = useState(2);
   const [_folderCounter, setFolderCounter] = useState(1);
   const [positionsInitialized, setPositionsInitialized] = useState(false);
@@ -309,15 +320,6 @@ export default function MacosDesktop({
   const [failedFavicons, setFailedFavicons] = useState<
     Record<string, string | null>
   >({});
-
-  // help window
-  const [helpWindow, setHelpWindow] = useState<HelpWindowType>({
-    visible: false,
-    content: "welcome",
-    position: { x: 150, y: 150 },
-    size: { width: 650, height: 450 },
-    zIndex: nextzIndex + 1000,
-  });
 
   //差分検知用の初期値
   const [originalApps, setOriginalApps] = useState<AppIcon[]>([]);
@@ -1594,119 +1596,6 @@ export default function MacosDesktop({
     setFolderColor(defaultDialogColor);
   };
 
-  const openMemo = (memoApp: MemoAppType) => {
-    const existingWindow = memoWindows.find((w) => w.id === memoApp.id);
-
-    if (existingWindow) {
-      // Bring to front
-      setMemoWindows((prev) =>
-        prev.map((w) =>
-          w.id === memoApp.id
-            ? {
-                ...w,
-                zIndex: nextzIndex,
-                color: memoApp.color,
-              }
-            : w,
-        ),
-      );
-      setNextzIndex((prev) => prev + 1);
-    } else {
-      // Create new window
-      const newWindow: MemoWindowType = {
-        id: memoApp.id,
-        title: memoApp.name,
-        content: memoApp.content || "",
-        position: {
-          x: 100 + memoWindows.length * 30,
-          y: 100 + memoWindows.length * 30,
-        },
-        size: { width: 600, height: 400 },
-        zIndex: nextzIndex,
-        color: memoApp.color,
-      };
-
-      setMemoWindows((prev) => [...prev, newWindow]);
-      setNextzIndex((prev) => prev + 1);
-    }
-  };
-
-  const openBrowser = (app: WebsiteAppType) => {
-    if (!app.url) return;
-
-    const existingWindow = browserWindows.find((w) => w.id === app.id);
-
-    if (existingWindow) {
-      // Bring to front
-      setBrowserWindows((prev) =>
-        prev.map((w) =>
-          w.id === app.id
-            ? {
-                ...w,
-                zIndex: nextzIndex,
-                color: app.color,
-              }
-            : w,
-        ),
-      );
-      setNextzIndex((prev) => prev + 1);
-    } else {
-      // Create new window
-      const newWindow: BrowserWindowType = {
-        id: app.id,
-        title: app.name,
-        favicon: app.favicon,
-        url: app.url,
-        position: {
-          x: 150 + browserWindows.length * 30,
-          y: 80 + browserWindows.length * 30,
-        },
-        size: { width: 1000, height: 700 },
-        zIndex: nextzIndex,
-        color: app.color,
-      };
-
-      setBrowserWindows((prev) => [...prev, newWindow]);
-      setNextzIndex((prev) => prev + 1);
-    }
-  };
-
-  const openFolder = (folderApp: FolderAppType) => {
-    const existingWindow = folderWindows.find((w) => w.id === folderApp.id);
-
-    if (existingWindow) {
-      // Bring to front
-      setFolderWindows((prev) =>
-        prev.map((w) =>
-          w.id === folderApp.id
-            ? {
-                ...w,
-                zIndex: nextzIndex,
-                color: folderApp.color,
-              }
-            : w,
-        ),
-      );
-      setNextzIndex((prev) => prev + 1);
-    } else {
-      // Create new window
-      const newWindow: FolderWindowType = {
-        id: folderApp.id,
-        title: folderApp.name,
-        position: {
-          x: 200 + folderWindows.length * 30,
-          y: 120 + folderWindows.length * 30,
-        },
-        size: { width: 800, height: 600 },
-        zIndex: nextzIndex,
-        color: folderApp.color,
-      };
-
-      setFolderWindows((prev) => [...prev, newWindow]);
-      setNextzIndex((prev) => prev + 1);
-    }
-  };
-
   const appsChanged = JSON.stringify(apps) !== JSON.stringify(originalApps);
   const positionsChanged =
     JSON.stringify(
@@ -1807,47 +1696,6 @@ export default function MacosDesktop({
     setApps((prev) =>
       prev.map((app) => (app.id === windowId ? { ...app, content } : app)),
     );
-  };
-
-  const closeMemoWindow = (windowId: string) => {
-    setMemoWindows((prev) => prev.filter((w) => w.id !== windowId));
-  };
-
-  const closeBrowserWindow = (windowId: string) => {
-    setBrowserWindows((prev) => prev.filter((w) => w.id !== windowId));
-  };
-
-  const closeFolderWindow = (windowId: string) => {
-    setFolderWindows((prev) => prev.filter((w) => w.id !== windowId));
-  };
-
-  const bringHelpWindowToFront = () => {
-    setHelpWindow((prev) => ({
-      ...prev,
-      zIndex: nextzIndex,
-    }));
-    setNextzIndex((prev) => prev + 1);
-  };
-
-  const bringMemoToFront = (windowId: string) => {
-    setMemoWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, zIndex: nextzIndex } : w)),
-    );
-    setNextzIndex((prev) => prev + 1);
-  };
-
-  const bringBrowserToFront = (windowId: string) => {
-    setBrowserWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, zIndex: nextzIndex } : w)),
-    );
-    setNextzIndex((prev) => prev + 1);
-  };
-
-  const bringFolderToFront = (windowId: string) => {
-    setFolderWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, zIndex: nextzIndex } : w)),
-    );
-    setNextzIndex((prev) => prev + 1);
   };
 
   const removeFromFolder = (folderId: string, appId: string) => {
