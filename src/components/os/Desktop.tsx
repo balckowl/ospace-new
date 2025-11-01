@@ -20,12 +20,7 @@ import {
   Lora,
 } from "next/font/google";
 import Image from "next/image";
-import {
-  type CSSProperties,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { authedHono } from "@/lib/hono-client";
 import { cn } from "@/lib/utils";
@@ -81,8 +76,8 @@ import {
   resolveAppColorStyles,
 } from "./functions/desktop-utils";
 import { lightDegreeLocalStore } from "./functions/lightDegreeLocalStorage";
-import { useDesktopWindows } from "./hooks/useDesktopWindows";
 import { useDesktopDragAndDrop } from "./hooks/useDesktopDragAndDrop";
+import { useDesktopWindows } from "./hooks/useDesktopWindows";
 import { UserIcon } from "./UserIcon";
 import { BrowserWindow } from "./window/BrowserWindow";
 import { FolderWindow } from "./window/FolderWindow";
@@ -555,7 +550,7 @@ export default function MacosDesktop({
       };
     });
   };
-   const findNextEmptyPosition = (): GridPosition | null => {
+  const findNextEmptyPosition = (): GridPosition | null => {
     for (let row = 0; row < GRID_ROWS; row++) {
       for (let col = 0; col < GRID_COLS; col++) {
         if (!getAppAtPosition(row, col)) {
@@ -870,7 +865,11 @@ export default function MacosDesktop({
   };
 
   const saveEdit = () => {
-    if (!editDialog.app || (!editDialog.newName.trim() && !(editDialog.app.type === "stamp")) ) return;
+    if (
+      !editDialog.app ||
+      (!editDialog.newName.trim() && !(editDialog.app.type === "stamp"))
+    )
+      return;
     // Update the app
     setApps((prev) =>
       prev.map((app) =>

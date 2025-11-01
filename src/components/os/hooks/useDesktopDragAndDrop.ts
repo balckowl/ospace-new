@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from "react";
 import type * as React from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { AppIcon, GridPosition } from "../types";
 
 type UseDesktopDragAndDropOptions = {
@@ -34,11 +34,7 @@ type UseDesktopDragAndDropResult = {
     folderId: string,
   ) => void;
   handleDragEnd: () => void;
-  handleDragOver: (
-    event: React.DragEvent,
-    row: number,
-    col: number,
-  ) => void;
+  handleDragOver: (event: React.DragEvent, row: number, col: number) => void;
   handleDragLeave: () => void;
   handleDrop: (
     event: React.DragEvent,
@@ -151,11 +147,7 @@ export function useDesktopDragAndDrop(
     dragSourceFolderRef.current = null;
   };
 
-  const handleDragOver = (
-    event: React.DragEvent,
-    row: number,
-    col: number,
-  ) => {
+  const handleDragOver = (event: React.DragEvent, row: number, col: number) => {
     event.preventDefault();
     setDraggedOver({ row, col });
 
@@ -361,10 +353,7 @@ export function useDesktopDragAndDrop(
     resetDragTracking();
   };
 
-  const handleFolderItemReorderDrop = (
-    folderId: string,
-    dropIndex: number,
-  ) => {
+  const handleFolderItemReorderDrop = (folderId: string, dropIndex: number) => {
     if (!isEdit) return;
     if (!draggedApp) {
       resetDragTracking();
