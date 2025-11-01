@@ -20,7 +20,6 @@ const SNAP_PADDING = 24;
 type BrowserWindowProps = {
   window: BrowserWindowType;
   onClose: () => void;
-  onMinimize: () => void;
   onBringToFront: () => void;
   onPositionChange: (position: { x: number; y: number }) => void;
   onSizeChange: (size: { width: number; height: number }) => void;
@@ -241,7 +240,7 @@ export function BrowserWindow({
           <Image
             width={30}
             height={30}
-            src="/astro.png"
+            src="/lp/astro.avif"
             alt="Astro mascot"
             className={`h-44 w-auto drop-shadow-2xl transition-transform duration-500 ${copiedUrl ? "-translate-y-1" : "translate-y-10"}`}
             draggable={false}

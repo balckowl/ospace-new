@@ -20,37 +20,24 @@ import {
   Lora,
 } from "next/font/google";
 import Image from "next/image";
-import {
-  type CSSProperties,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { authedHono } from "@/lib/hono-client";
 import { cn } from "@/lib/utils";
 import type {
   BackgroundOptionType,
   DesktopStateType,
-  FolderAppType,
   FontOptionType,
-  MemoAppType,
-  WebsiteAppType,
 } from "@/server/schemas/desktop.schema";
 import type {
   AppIcon,
   AppUrlDialog,
-  BrowserWindowType,
   ContextMenuType,
   CurrentUserType,
   EditDialog,
   FolderNameDialog,
-  FolderWindowType,
   GridPosition,
-  HelpWindowType,
   MemoNameDialog,
-  MemoWindowType,
   SelectStampDialog,
 } from "../os/types";
 import { Button } from "../ui/button";
@@ -62,13 +49,35 @@ import {
 } from "../ui/tooltip";
 import { backgroundOptions } from "./BackgroundImage";
 import { ContextMenu } from "./ContextMenu";
+import {
+  DESKTOP_FRAME_RADIUS,
+  FRAME_OVERLAY_COLOR,
+  FRAME_OVERLAY_Z_INDEX,
+  GRID_COLS,
+  GRID_ROWS,
+  PINNED_DESKTOP_PADDING,
+  PINNED_PANEL_WIDTH,
+} from "./constants/desktop";
 import { DraggableMenu } from "./DraggableMenu";
 import CreateAppDialog from "./dialog/CreateAppDialog";
 import DefaultDialog, { DEFAULT_DIALOG_COLORS } from "./dialog/DefaultDialog";
 import EditStampDialog from "./dialog/EditStampDialog";
 import StampDialog, { stampOptions } from "./dialog/SelectStampDialog";
 import { checkUrlExists } from "./functions/checkUrlExist";
+import {
+  cloneAppPositions,
+  cloneApps,
+  cloneFolderContents,
+  createFolderContentsMap,
+  type DesktopApp,
+  mapAppIconToDesktopApp,
+  mapDesktopAppToAppIcon,
+  mapEntriesToJson,
+  resolveAppColorStyles,
+} from "./functions/desktop-utils";
 import { lightDegreeLocalStore } from "./functions/lightDegreeLocalStorage";
+import { useDesktopDragAndDrop } from "./hooks/useDesktopDragAndDrop";
+import { useDesktopWindows } from "./hooks/useDesktopWindows";
 import { UserIcon } from "./UserIcon";
 import { BrowserWindow } from "./window/BrowserWindow";
 import { FolderWindow } from "./window/FolderWindow";
@@ -96,154 +105,11 @@ const allan = Allan({ subsets: ["latin"], weight: "400" });
 const lora = Lora({ subsets: ["latin"] });
 const comfortea = Comfortaa({ subsets: ["latin"] });
 
-const GRID_COLS = 6;
-const GRID_ROWS = 8;
-const PINNED_PANEL_WIDTH = 220;
-const PINNED_DESKTOP_PADDING = 12;
-const FRAME_OVERLAY_Z_INDEX = 2147483646;
-const DESKTOP_FRAME_RADIUS = "1rem";
-const FRAME_OVERLAY_COLOR = "var(--background, #fff)";
-
-type DesktopApp = DesktopStateType["state"]["appItems"][number];
-
 const ICON_COMPONENTS: Record<DesktopApp["iconKey"], LucideIcon> = {
   StickyNote,
   Globe,
   FolderIcon,
 };
-
-const mapDesktopAppToAppIcon = (app: DesktopApp): AppIcon => {
-  switch (app.type) {
-    case "website":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        name: app.name,
-        type: "website",
-        url: app.url,
-        favicon: app.favicon,
-      };
-    case "memo":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        name: app.name,
-        type: "memo",
-        content: app.content,
-      };
-    case "folder":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        name: app.name,
-        type: "folder",
-      };
-    case "stamp":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "stamp",
-        stampType: app.stampType,
-        stampText: app.stampText,
-      };
-    default: {
-      const _exhaustiveCheck: never = app;
-      throw new Error(`Unhandled app type: ${_exhaustiveCheck}`);
-    }
-  }
-};
-
-const mapAppIconToDesktopApp = (app: AppIcon): DesktopApp => {
-  switch (app.type) {
-    case "website":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "website",
-        name: app.name,
-        url: app.url ?? "",
-        favicon: app.favicon ?? "",
-      };
-    case "memo":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "memo",
-        name: app.name,
-        content: app.content ?? "",
-      };
-    case "folder":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "folder",
-        name: app.name,
-      };
-    case "stamp":
-      return {
-        id: app.id,
-        iconKey: app.iconKey,
-        color: app.color,
-        type: "stamp",
-        stampType: app.stampType,
-        stampText: app.stampText ?? "",
-      };
-    default: {
-      const _exhaustiveCheck: never = app;
-      throw new Error(`Unhandled app type: ${_exhaustiveCheck}`);
-    }
-  }
-};
-
-const cloneApps = (appsToClone: AppIcon[]) =>
-  appsToClone.map((app) => ({ ...app }));
-
-const cloneAppPositions = (positions: Map<string, GridPosition>) =>
-  new Map<string, GridPosition>(
-    Array.from(positions.entries(), ([key, value]) => [key, { ...value }]),
-  );
-
-const createFolderContentsMap = (data: Record<string, string[]>) =>
-  new Map<string, string[]>(
-    Object.entries(data).map(([key, value]) => [key, [...value]]),
-  );
-
-const resolveAppColorStyles = (
-  color: string,
-): {
-  className: string;
-  style: CSSProperties | undefined;
-} => {
-  if (!color) {
-    return { className: "", style: undefined };
-  }
-
-  if (color.startsWith("bg-")) {
-    return { className: color, style: undefined };
-  }
-
-  return {
-    className: "",
-    style: { background: color },
-  };
-};
-
-const cloneFolderContents = (contents: Map<string, string[]>) =>
-  new Map<string, string[]>(
-    Array.from(contents.entries(), ([key, value]) => [key, [...value]]),
-  );
-
-const mapEntriesToJson = (contents: Map<string, string[]>) =>
-  JSON.stringify(
-    Array.from(contents.entries(), ([key, value]) => [key, [...value]]),
-  );
 
 export default function MacosDesktop({
   desktopById,
@@ -260,8 +126,6 @@ export default function MacosDesktop({
   const [appPositions, setAppPositions] = useState<Map<string, GridPosition>>(
     new Map(),
   );
-  const [draggedApp, setDraggedApp] = useState<string | null>(null);
-  const [draggedOver, setDraggedOver] = useState<GridPosition | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuType>({
     visible: false,
     x: 0,
@@ -270,16 +134,29 @@ export default function MacosDesktop({
     existingApp: null,
     folderId: null,
   });
-  const [memoWindows, setMemoWindows] = useState<MemoWindowType[]>([]);
-  const [browserWindows, setBrowserWindows] = useState<BrowserWindowType[]>([]);
-  const [folderWindows, setFolderWindows] = useState<FolderWindowType[]>([]);
+  const {
+    nextzIndex,
+    memoWindows,
+    browserWindows,
+    folderWindows,
+    helpWindow,
+    setMemoWindows,
+    setBrowserWindows,
+    setFolderWindows,
+    setHelpWindow,
+    openMemo,
+    openBrowser,
+    openFolder,
+    closeMemoWindow,
+    closeBrowserWindow,
+    closeFolderWindow,
+    bringHelpWindowToFront,
+    bringMemoToFront,
+    bringBrowserToFront,
+    bringFolderToFront,
+  } = useDesktopWindows();
   const openFolderIds = useMemo(
-    () =>
-      new Set(
-        folderWindows
-          .filter((window) => !window.isMinimized)
-          .map((window) => window.id),
-      ),
+    () => new Set(folderWindows.map((window) => window.id)),
     [folderWindows],
   );
   const panelOffsetRight = isPanelPinned ? PINNED_PANEL_WIDTH : 0;
@@ -354,7 +231,6 @@ export default function MacosDesktop({
       },
     ];
   }, [framePadding]);
-  const [nextzIndex, setNextzIndex] = useState(1000);
   const [_memoCounter, setMemoCounter] = useState(2);
   const [_folderCounter, setFolderCounter] = useState(1);
   const [positionsInitialized, setPositionsInitialized] = useState(false);
@@ -431,22 +307,9 @@ export default function MacosDesktop({
   const [originalFolderContents, setOriginalFolderContents] = useState<
     Map<string, string[]>
   >(new Map());
-  const [draggedOverFolder, setDraggedOverFolder] = useState<string | null>(
-    null,
-  );
   const [failedFavicons, setFailedFavicons] = useState<
     Record<string, string | null>
   >({});
-
-  // help window
-  const [helpWindow, setHelpWindow] = useState<HelpWindowType>({
-    visible: false,
-    content: "welcome",
-    position: { x: 150, y: 150 },
-    size: { width: 650, height: 450 },
-    isMinimized: false,
-    zIndex: nextzIndex + 1000,
-  });
 
   //差分検知用の初期値
   const [originalApps, setOriginalApps] = useState<AppIcon[]>([]);
@@ -473,9 +336,6 @@ export default function MacosDesktop({
     setBrightness(storedBrightness);
   }, []);
 
-  const dragSourceRef = useRef<GridPosition | null>(null);
-  const draggedFromFolderRef = useRef(false);
-  const dragSourceFolderRef = useRef<string | null>(null);
   const appsById = useMemo(
     () => new Map(apps.map((app) => [app.id, app])),
     [apps],
@@ -690,434 +550,43 @@ export default function MacosDesktop({
       };
     });
   };
-
-  const setDragPreview = (
-    event: React.DragEvent,
-    sourceElement: HTMLElement | null,
-  ) => {
-    if (!sourceElement || !event.dataTransfer) return;
-    const rect = sourceElement.getBoundingClientRect();
-    const preview = sourceElement.cloneNode(true) as HTMLElement;
-    preview.style.position = "fixed";
-    preview.style.top = "-1000px";
-    preview.style.left = "-1000px";
-    preview.style.width = `${rect.width}px`;
-    preview.style.height = `${rect.height}px`;
-    preview.style.pointerEvents = "none";
-    preview.style.margin = "0";
-    preview.style.transform = "none";
-    document.body.appendChild(preview);
-    const nativeEvent = event.nativeEvent as DragEvent;
-    const offsetX = nativeEvent.clientX - rect.left;
-    const offsetY = nativeEvent.clientY - rect.top;
-    event.dataTransfer.setDragImage(preview, offsetX, offsetY);
-    requestAnimationFrame(() => {
-      if (preview.parentNode) {
-        preview.parentNode.removeChild(preview);
-      }
-    });
-  };
-
-  const handleDragStart = (e: React.DragEvent, appId: string) => {
-    if (!isEdit) return;
-    setDraggedApp(appId);
-    const position = appPositions.get(appId);
-    if (position) {
-      dragSourceRef.current = position;
-    }
-    draggedFromFolderRef.current = false;
-    dragSourceFolderRef.current = null;
-    setDragPreview(e, e.currentTarget as HTMLElement);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleFolderItemDragStart = (
-    e: React.DragEvent,
-    appId: string,
-    folderId: string,
-  ) => {
-    if (!isEdit) return;
-    setDraggedApp(appId);
-    dragSourceRef.current = null;
-    draggedFromFolderRef.current = true;
-    dragSourceFolderRef.current = folderId;
-    setDragPreview(e, e.currentTarget as HTMLElement);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragEnd = () => {
-    setDraggedApp(null);
-    setDraggedOver(null);
-    setDraggedOverFolder(null);
-    dragSourceRef.current = null;
-    draggedFromFolderRef.current = false;
-    dragSourceFolderRef.current = null;
-  };
-
-  const resetDragTracking = () => {
-    setDraggedOver(null);
-    setDraggedOverFolder(null);
-    dragSourceRef.current = null;
-    draggedFromFolderRef.current = false;
-    dragSourceFolderRef.current = null;
-  };
-
-  const handleDragOver = (e: React.DragEvent, row: number, col: number) => {
-    e.preventDefault();
-    setDraggedOver({ row, col });
-
-    // Check if we're dragging over a folder
-    const targetApp = getAppAtPosition(row, col);
-    if (targetApp && targetApp.type === "folder") {
-      setDraggedOverFolder(targetApp.id);
-    } else {
-      setDraggedOverFolder(null);
-    }
-
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDragLeave = () => {
-    setDraggedOver(null);
-    setDraggedOverFolder(null);
-  };
-  const handleDrop = (
-    e: React.DragEvent,
-    targetRow: number,
-    targetCol: number,
-  ) => {
-    if (!isEdit) return;
-    e.preventDefault();
-
-    if (!draggedApp) return;
-    const isFromFolder = draggedFromFolderRef.current;
-    if (!dragSourceRef.current && !isFromFolder) return;
-
-    const newPositions = new Map(appPositions);
-    const targetApp = getAppAtPosition(targetRow, targetCol);
-    const draggedAppData = apps.find((app) => app.id === draggedApp);
-
-    const removeAppFromSourceFolder = (map: Map<string, string[]>) => {
-      if (!draggedApp) return map;
-      const sourceFolderId = dragSourceFolderRef.current;
-      if (!sourceFolderId) return map;
-      const contents = map.get(sourceFolderId);
-      if (!contents) return map;
-      map.set(
-        sourceFolderId,
-        contents.filter((id) => id !== draggedApp),
-      );
-      return map;
-    };
-
-    if (targetApp && targetApp.type === "folder") {
-      if (draggedAppData?.type === "stamp") {
-        const originPosition = dragSourceRef.current;
-        if (!originPosition) {
-          setDraggedOver(null);
-          setDraggedOverFolder(null);
-          return;
-        }
-        newPositions.set(draggedApp, {
-          row: targetRow,
-          col: targetCol,
-        });
-        newPositions.set(targetApp.id, originPosition);
-        setAppPositions(newPositions);
-      } else {
-        if (
-          draggedAppData?.type === "folder" &&
-          wouldCreateFolderCycle(folderContents, draggedApp, targetApp.id)
-        ) {
-          setDraggedOver(null);
-          setDraggedOverFolder(null);
-          return;
-        }
-        const newFolderContents = removeAppFromSourceFolder(
-          new Map(folderContents),
-        );
-        const currentContents = newFolderContents.get(targetApp.id) || [];
-        if (!currentContents.includes(draggedApp)) {
-          newFolderContents.set(targetApp.id, [...currentContents, draggedApp]);
-        }
-        setFolderContents(newFolderContents);
-        newPositions.delete(draggedApp);
-        setAppPositions(newPositions);
-        if (draggedAppData?.type === "folder") {
-          setFolderWindows((prev) => prev.filter((w) => w.id !== draggedApp));
+  const findNextEmptyPosition = (): GridPosition | null => {
+    for (let row = 0; row < GRID_ROWS; row++) {
+      for (let col = 0; col < GRID_COLS; col++) {
+        if (!getAppAtPosition(row, col)) {
+          return { row, col };
         }
       }
-    } else if (targetApp) {
-      if (isFromFolder) {
-        const emptyPosition = findNextEmptyPosition();
-        if (!emptyPosition) {
-          setDraggedOver(null);
-          setDraggedOverFolder(null);
-          dragSourceFolderRef.current = null;
-          draggedFromFolderRef.current = false;
-          return;
-        }
-        newPositions.set(draggedApp, {
-          row: targetRow,
-          col: targetCol,
-        });
-        newPositions.set(targetApp.id, emptyPosition);
-        setAppPositions(newPositions);
-        const updatedFolderContents = removeAppFromSourceFolder(
-          new Map(folderContents),
-        );
-        setFolderContents(updatedFolderContents);
-      } else {
-        const originPosition = dragSourceRef.current;
-        if (!originPosition) {
-          setDraggedOver(null);
-          setDraggedOverFolder(null);
-          return;
-        }
-        newPositions.set(draggedApp, {
-          row: targetRow,
-          col: targetCol,
-        });
-        newPositions.set(targetApp.id, originPosition);
-        setAppPositions(newPositions);
-      }
-    } else {
-      newPositions.set(draggedApp, {
-        row: targetRow,
-        col: targetCol,
-      });
-      setAppPositions(newPositions);
-      if (isFromFolder && dragSourceFolderRef.current) {
-        const updatedFolderContents = removeAppFromSourceFolder(
-          new Map(folderContents),
-        );
-        setFolderContents(updatedFolderContents);
-      }
     }
-
-    setDraggedOver(null);
-    setDraggedOverFolder(null);
-    dragSourceFolderRef.current = null;
-    draggedFromFolderRef.current = false;
+    return null;
   };
 
-  const handleDropIntoFolderWindow = (targetFolderId: string) => {
-    if (!isEdit) return;
-    if (!draggedApp) {
-      resetDragTracking();
-      return;
-    }
-
-    const draggedAppData = apps.find((app) => app.id === draggedApp);
-    if (!draggedAppData || draggedAppData.type === "stamp") {
-      resetDragTracking();
-      return;
-    }
-    if (draggedApp === targetFolderId) {
-      resetDragTracking();
-      return;
-    }
-    if (
-      draggedAppData.type === "folder" &&
-      wouldCreateFolderCycle(folderContents, draggedApp, targetFolderId)
-    ) {
-      resetDragTracking();
-      return;
-    }
-
-    setFolderContents((prev) => {
-      const newContents = new Map(prev);
-      const sourceFolderId = dragSourceFolderRef.current;
-      if (sourceFolderId) {
-        const contents = newContents.get(sourceFolderId);
-        if (contents) {
-          newContents.set(
-            sourceFolderId,
-            contents.filter((appId) => appId !== draggedApp),
-          );
-        }
-      } else {
-        for (const [folderId, contents] of Array.from(newContents.entries())) {
-          if (contents.includes(draggedApp)) {
-            newContents.set(
-              folderId,
-              contents.filter((appId) => appId !== draggedApp),
-            );
-          }
-        }
-      }
-
-      const currentContents = newContents.get(targetFolderId) || [];
-      if (!currentContents.includes(draggedApp)) {
-        newContents.set(targetFolderId, [...currentContents, draggedApp]);
-      }
-
-      return newContents;
-    });
-
-    setAppPositions((prev) => {
-      const newPositions = new Map(prev);
-      newPositions.delete(draggedApp);
-      return newPositions;
-    });
-
-    if (draggedAppData.type === "folder") {
-      setFolderWindows((prev) => prev.filter((w) => w.id !== draggedApp));
-    }
-
-    resetDragTracking();
-  };
-
-  const handleFolderItemReorderDrop = (folderId: string, dropIndex: number) => {
-    if (!isEdit) return;
-    if (!draggedApp) {
-      resetDragTracking();
-      return;
-    }
-
-    const draggedAppData = appsById.get(draggedApp);
-    if (!draggedAppData || draggedAppData.type === "stamp") {
-      resetDragTracking();
-      return;
-    }
-    if (draggedApp === folderId) {
-      resetDragTracking();
-      return;
-    }
-    if (
-      draggedAppData.type === "folder" &&
-      wouldCreateFolderCycle(folderContents, draggedApp, folderId)
-    ) {
-      resetDragTracking();
-      return;
-    }
-
-    const sourceFolderId = dragSourceFolderRef.current;
-
-    setFolderContents((prev) => {
-      const next = new Map(prev);
-      if (sourceFolderId) {
-        const sourceContents = [...(next.get(sourceFolderId) ?? [])];
-        const idx = sourceContents.indexOf(draggedApp);
-        if (idx !== -1) {
-          sourceContents.splice(idx, 1);
-          next.set(sourceFolderId, sourceContents);
-        }
-      } else {
-        for (const [fid, contents] of Array.from(next.entries())) {
-          if (fid === folderId) continue;
-          if (contents.includes(draggedApp)) {
-            next.set(
-              fid,
-              contents.filter((id) => id !== draggedApp),
-            );
-          }
-        }
-      }
-
-      const targetContents = [...(next.get(folderId) ?? [])];
-      const existingIndex = targetContents.indexOf(draggedApp);
-      if (existingIndex !== -1) {
-        targetContents.splice(existingIndex, 1);
-      }
-
-      const insertIndex = Math.max(
-        0,
-        Math.min(dropIndex, targetContents.length),
-      );
-
-      targetContents.splice(insertIndex, 0, draggedApp);
-      next.set(folderId, targetContents);
-
-      return next;
-    });
-
-    setAppPositions((prev) => {
-      if (!prev.has(draggedApp)) return prev;
-      const newPositions = new Map(prev);
-      newPositions.delete(draggedApp);
-      return newPositions;
-    });
-
-    if (draggedAppData.type === "folder") {
-      setFolderWindows((prev) => prev.filter((w) => w.id !== draggedApp));
-    }
-
-    resetDragTracking();
-  };
-
-  const handleDropIntoNestedFolder = (
-    targetFolderId: string,
-    _parentFolderId: string,
-  ) => {
-    if (!isEdit) return;
-    if (!draggedApp) {
-      resetDragTracking();
-      return;
-    }
-
-    const draggedAppData = appsById.get(draggedApp);
-    if (!draggedAppData || draggedAppData.type === "stamp") {
-      resetDragTracking();
-      return;
-    }
-    if (draggedApp === targetFolderId) {
-      resetDragTracking();
-      return;
-    }
-    if (
-      draggedAppData.type === "folder" &&
-      wouldCreateFolderCycle(folderContents, draggedApp, targetFolderId)
-    ) {
-      resetDragTracking();
-      return;
-    }
-
-    const sourceFolderId = dragSourceFolderRef.current;
-
-    setFolderContents((prev) => {
-      const next = new Map(prev);
-
-      if (sourceFolderId) {
-        const sourceContents = [...(next.get(sourceFolderId) ?? [])];
-        const idx = sourceContents.indexOf(draggedApp);
-        if (idx !== -1) {
-          sourceContents.splice(idx, 1);
-          next.set(sourceFolderId, sourceContents);
-        }
-      } else {
-        for (const [fid, contents] of Array.from(next.entries())) {
-          if (contents.includes(draggedApp)) {
-            next.set(
-              fid,
-              contents.filter((id) => id !== draggedApp),
-            );
-          }
-        }
-      }
-
-      const targetContents = [...(next.get(targetFolderId) ?? [])];
-      if (!targetContents.includes(draggedApp)) {
-        targetContents.push(draggedApp);
-        next.set(targetFolderId, targetContents);
-      }
-
-      return next;
-    });
-
-    setAppPositions((prev) => {
-      if (!prev.has(draggedApp)) return prev;
-      const newPositions = new Map(prev);
-      newPositions.delete(draggedApp);
-      return newPositions;
-    });
-
-    if (draggedAppData.type === "folder") {
-      setFolderWindows((prev) => prev.filter((w) => w.id !== draggedApp));
-    }
-
-    resetDragTracking();
-  };
+  const {
+    draggedOver,
+    draggedOverFolder,
+    canDropIntoFolderWindow,
+    handleDragStart,
+    handleFolderItemDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleDropIntoFolderWindow,
+    handleFolderItemReorderDrop,
+    handleDropIntoNestedFolder,
+  } = useDesktopDragAndDrop({
+    isEdit,
+    apps,
+    appsById,
+    appPositions,
+    folderContents,
+    getAppAtPosition,
+    findNextEmptyPosition,
+    wouldCreateFolderCycle,
+    setAppPositions,
+    setFolderContents,
+    closeFolderWindow,
+  });
 
   const handleRightClick = (e: React.MouseEvent, row: number, col: number) => {
     if (isEdit === false) return;
@@ -1396,8 +865,11 @@ export default function MacosDesktop({
   };
 
   const saveEdit = () => {
-    if (!editDialog.app || !editDialog.newName.trim()) return;
-
+    if (
+      !editDialog.app ||
+      (!editDialog.newName.trim() && !(editDialog.app.type === "stamp"))
+    )
+      return;
     // Update the app
     setApps((prev) =>
       prev.map((app) =>
@@ -1413,7 +885,7 @@ export default function MacosDesktop({
                 : {}),
               ...(app.type === "stamp" && editDialog.newContent !== undefined
                 ? {
-                    stampContent: editDialog.newContent,
+                    stampText: editDialog.newContent,
                   }
                 : {}),
             }
@@ -1484,17 +956,6 @@ export default function MacosDesktop({
       newContent: "",
       newColor: "",
     });
-  };
-
-  const findNextEmptyPosition = (): GridPosition | null => {
-    for (let row = 0; row < GRID_ROWS; row++) {
-      for (let col = 0; col < GRID_COLS; col++) {
-        if (!getAppAtPosition(row, col)) {
-          return { row, col };
-        }
-      }
-    }
-    return null;
   };
 
   const createMemoWithName = () => {
@@ -1723,125 +1184,6 @@ export default function MacosDesktop({
     setFolderColor(defaultDialogColor);
   };
 
-  const openMemo = (memoApp: MemoAppType) => {
-    const existingWindow = memoWindows.find((w) => w.id === memoApp.id);
-
-    if (existingWindow) {
-      // Bring to front
-      setMemoWindows((prev) =>
-        prev.map((w) =>
-          w.id === memoApp.id
-            ? {
-                ...w,
-                isMinimized: false,
-                zIndex: nextzIndex,
-                color: memoApp.color,
-              }
-            : w,
-        ),
-      );
-      setNextzIndex((prev) => prev + 1);
-    } else {
-      // Create new window
-      const newWindow: MemoWindowType = {
-        id: memoApp.id,
-        title: memoApp.name,
-        content: memoApp.content || "",
-        position: {
-          x: 100 + memoWindows.length * 30,
-          y: 100 + memoWindows.length * 30,
-        },
-        size: { width: 600, height: 400 },
-        isMinimized: false,
-        zIndex: nextzIndex,
-        color: memoApp.color,
-      };
-
-      setMemoWindows((prev) => [...prev, newWindow]);
-      setNextzIndex((prev) => prev + 1);
-    }
-  };
-
-  const openBrowser = (app: WebsiteAppType) => {
-    if (!app.url) return;
-
-    const existingWindow = browserWindows.find((w) => w.id === app.id);
-
-    if (existingWindow) {
-      // Bring to front
-      setBrowserWindows((prev) =>
-        prev.map((w) =>
-          w.id === app.id
-            ? {
-                ...w,
-                isMinimized: false,
-                zIndex: nextzIndex,
-                color: app.color,
-              }
-            : w,
-        ),
-      );
-      setNextzIndex((prev) => prev + 1);
-    } else {
-      // Create new window
-      const newWindow: BrowserWindowType = {
-        id: app.id,
-        title: app.name,
-        favicon: app.favicon,
-        url: app.url,
-        position: {
-          x: 150 + browserWindows.length * 30,
-          y: 80 + browserWindows.length * 30,
-        },
-        size: { width: 1000, height: 700 },
-        isMinimized: false,
-        zIndex: nextzIndex,
-        color: app.color,
-      };
-
-      setBrowserWindows((prev) => [...prev, newWindow]);
-      setNextzIndex((prev) => prev + 1);
-    }
-  };
-
-  const openFolder = (folderApp: FolderAppType) => {
-    const existingWindow = folderWindows.find((w) => w.id === folderApp.id);
-
-    if (existingWindow) {
-      // Bring to front
-      setFolderWindows((prev) =>
-        prev.map((w) =>
-          w.id === folderApp.id
-            ? {
-                ...w,
-                isMinimized: false,
-                zIndex: nextzIndex,
-                color: folderApp.color,
-              }
-            : w,
-        ),
-      );
-      setNextzIndex((prev) => prev + 1);
-    } else {
-      // Create new window
-      const newWindow: FolderWindowType = {
-        id: folderApp.id,
-        title: folderApp.name,
-        position: {
-          x: 200 + folderWindows.length * 30,
-          y: 120 + folderWindows.length * 30,
-        },
-        size: { width: 800, height: 600 },
-        isMinimized: false,
-        zIndex: nextzIndex,
-        color: folderApp.color,
-      };
-
-      setFolderWindows((prev) => [...prev, newWindow]);
-      setNextzIndex((prev) => prev + 1);
-    }
-  };
-
   const appsChanged = JSON.stringify(apps) !== JSON.stringify(originalApps);
   const positionsChanged =
     JSON.stringify(
@@ -1942,59 +1284,6 @@ export default function MacosDesktop({
     setApps((prev) =>
       prev.map((app) => (app.id === windowId ? { ...app, content } : app)),
     );
-  };
-
-  const closeMemoWindow = (windowId: string) => {
-    setMemoWindows((prev) => prev.filter((w) => w.id !== windowId));
-  };
-
-  const closeBrowserWindow = (windowId: string) => {
-    setBrowserWindows((prev) => prev.filter((w) => w.id !== windowId));
-  };
-
-  const closeFolderWindow = (windowId: string) => {
-    setFolderWindows((prev) => prev.filter((w) => w.id !== windowId));
-  };
-
-  const minimizeBrowserWindow = (windowId: string) => {
-    setBrowserWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, isMinimized: true } : w)),
-    );
-  };
-
-  const minimizeFolderWindow = (windowId: string) => {
-    setFolderWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, isMinimized: true } : w)),
-    );
-  };
-
-  const bringHelpWindowToFront = () => {
-    setHelpWindow((prev) => ({
-      ...prev,
-      zIndex: nextzIndex,
-    }));
-    setNextzIndex((prev) => prev + 1);
-  };
-
-  const bringMemoToFront = (windowId: string) => {
-    setMemoWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, zIndex: nextzIndex } : w)),
-    );
-    setNextzIndex((prev) => prev + 1);
-  };
-
-  const bringBrowserToFront = (windowId: string) => {
-    setBrowserWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, zIndex: nextzIndex } : w)),
-    );
-    setNextzIndex((prev) => prev + 1);
-  };
-
-  const bringFolderToFront = (windowId: string) => {
-    setFolderWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, zIndex: nextzIndex } : w)),
-    );
-    setNextzIndex((prev) => prev + 1);
   };
 
   const removeFromFolder = (folderId: string, appId: string) => {
@@ -2175,7 +1464,7 @@ export default function MacosDesktop({
                           onDragEnd={handleDragEnd}
                         >
                           <Image
-                            src={`/os/stamp/${app.stampType}.png`}
+                            src={`/os/stamp/${app.stampType}.avif`}
                             alt="stamp"
                             width={65}
                             height={65}
@@ -2194,7 +1483,7 @@ export default function MacosDesktop({
                       onDragEnd={handleDragEnd}
                     >
                       <Image
-                        src={`/os/stamp/${app.stampType}.png`}
+                        src={`/os/stamp/${app.stampType}.avif`}
                         alt="stamp"
                         width={65}
                         height={65}
@@ -2257,13 +1546,6 @@ export default function MacosDesktop({
 
     return grid;
   };
-
-  const draggedAppData = draggedApp
-    ? apps.find((app) => app.id === draggedApp)
-    : null;
-  const canDropIntoFolderWindow = Boolean(
-    isEdit && draggedAppData && draggedAppData.type !== "stamp",
-  );
 
   return (
     <div
@@ -2482,7 +1764,6 @@ export default function MacosDesktop({
                   visible: false,
                 }))
               }
-              // onMinimize={}
               onBringToFront={() => {
                 bringHelpWindowToFront();
               }}
@@ -2502,148 +1783,137 @@ export default function MacosDesktop({
           )}
 
           {/* Memo Windows */}
-          {memoWindows.map(
-            (window) =>
-              !window.isMinimized && (
-                <MemoWindow
-                  key={window.id}
-                  window={window}
-                  isEditable={isEdit}
-                  currentFont={font}
-                  getFontStyle={getFontStyle}
-                  onClose={() => closeMemoWindow(window.id)}
-                  onContentChange={(content) =>
-                    updateMemoContent(window.id, content)
-                  }
-                  onBringToFront={() => bringMemoToFront(window.id)}
-                  onPositionChange={(position) => {
-                    setMemoWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              position,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  onSizeChange={(size) => {
-                    setMemoWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              size,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                />
-              ),
-          )}
+          {memoWindows.map((window) => (
+            <MemoWindow
+              key={window.id}
+              window={window}
+              isEditable={isEdit}
+              currentFont={font}
+              getFontStyle={getFontStyle}
+              onClose={() => closeMemoWindow(window.id)}
+              onContentChange={(content) =>
+                updateMemoContent(window.id, content)
+              }
+              onBringToFront={() => bringMemoToFront(window.id)}
+              onPositionChange={(position) => {
+                setMemoWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          position,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              onSizeChange={(size) => {
+                setMemoWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          size,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+            />
+          ))}
 
           {/* Browser Windows */}
-          {browserWindows.map(
-            (window) =>
-              !window.isMinimized && (
-                <BrowserWindow
-                  key={window.id}
-                  window={window}
-                  currentFont={font}
-                  getFontStyle={getFontStyle}
-                  onClose={() => closeBrowserWindow(window.id)}
-                  onMinimize={() => minimizeBrowserWindow(window.id)}
-                  onBringToFront={() => bringBrowserToFront(window.id)}
-                  onPositionChange={(position) => {
-                    setBrowserWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              position,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  onSizeChange={(size) => {
-                    setBrowserWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              size,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                />
-              ),
-          )}
+          {browserWindows.map((window) => (
+            <BrowserWindow
+              key={window.id}
+              window={window}
+              currentFont={font}
+              getFontStyle={getFontStyle}
+              onClose={() => closeBrowserWindow(window.id)}
+              onBringToFront={() => bringBrowserToFront(window.id)}
+              onPositionChange={(position) => {
+                setBrowserWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          position,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              onSizeChange={(size) => {
+                setBrowserWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          size,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+            />
+          ))}
 
           {/* Folder Windows */}
-          {folderWindows.map(
-            (window) =>
-              !window.isMinimized && (
-                <FolderWindow
-                  key={window.id}
-                  window={window}
-                  currentFont={font}
-                  getFontStyle={getFontStyle}
-                  folderContents={folderContents.get(window.id) || []}
-                  allFolderContents={folderContents}
-                  apps={apps}
-                  desktopBackground={background}
-                  brightness={brightness}
-                  isEditable={isEdit}
-                  canDropExternal={canDropIntoFolderWindow}
-                  onExternalDrop={() => handleDropIntoFolderWindow(window.id)}
-                  onClose={() => closeFolderWindow(window.id)}
-                  onMinimize={() => minimizeFolderWindow(window.id)}
-                  onBringToFront={() => bringFolderToFront(window.id)}
-                  onRemoveApp={(appId) => removeFromFolder(window.id, appId)}
-                  onAppClick={handleAppClick}
-                  onAppContextMenu={handleFolderAppContextMenu}
-                  onEmptyAreaContextMenu={handleFolderEmptyAreaContextMenu}
-                  onAppDragStart={(e, appId) =>
-                    handleFolderItemDragStart(e, appId, window.id)
-                  }
-                  onAppDragEnd={handleDragEnd}
-                  onAppDrop={handleFolderItemReorderDrop}
-                  onDropIntoFolder={handleDropIntoNestedFolder}
-                  onPositionChange={(position) => {
-                    setFolderWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              position,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  onSizeChange={(size) => {
-                    setFolderWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              size,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  failedFavicons={failedFavicons}
-                  onFaviconError={markFaviconAsFailed}
-                  openFolderIds={openFolderIds}
-                />
-              ),
-          )}
+          {folderWindows.map((window) => (
+            <FolderWindow
+              key={window.id}
+              window={window}
+              currentFont={font}
+              getFontStyle={getFontStyle}
+              folderContents={folderContents.get(window.id) || []}
+              allFolderContents={folderContents}
+              apps={apps}
+              desktopBackground={background}
+              brightness={brightness}
+              isEditable={isEdit}
+              canDropExternal={canDropIntoFolderWindow}
+              onExternalDrop={() => handleDropIntoFolderWindow(window.id)}
+              onClose={() => closeFolderWindow(window.id)}
+              onBringToFront={() => bringFolderToFront(window.id)}
+              onRemoveApp={(appId) => removeFromFolder(window.id, appId)}
+              onAppClick={handleAppClick}
+              onAppContextMenu={handleFolderAppContextMenu}
+              onEmptyAreaContextMenu={handleFolderEmptyAreaContextMenu}
+              onAppDragStart={(e, appId) =>
+                handleFolderItemDragStart(e, appId, window.id)
+              }
+              onAppDragEnd={handleDragEnd}
+              onAppDrop={handleFolderItemReorderDrop}
+              onDropIntoFolder={handleDropIntoNestedFolder}
+              onPositionChange={(position) => {
+                setFolderWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          position,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              onSizeChange={(size) => {
+                setFolderWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          size,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              failedFavicons={failedFavicons}
+              onFaviconError={markFaviconAsFailed}
+              openFolderIds={openFolderIds}
+            />
+          ))}
 
           {showDesktopSaveBtn && isEdit && (
             <div

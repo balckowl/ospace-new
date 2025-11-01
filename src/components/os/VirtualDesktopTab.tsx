@@ -13,6 +13,7 @@ import {
 import { authedHono } from "@/lib/hono-client";
 import type { DesktopStateType } from "@/server/schemas/desktop.schema";
 import { backgroundOptions } from "./BackgroundImage";
+import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 import Desktop from "./Desktop";
 import VirtualDesktopDialog from "./dialog/VirtualDesktopDialog";
 import { TabContextMenu } from "./TabContextMenu";
@@ -22,8 +23,6 @@ export type DesktopWithoutDates = Omit<
   DesktopStateType,
   "createdAt" | "updatedAt"
 >;
-
-const PINNED_PANEL_WIDTH = 220;
 
 const isSameOrder = (list: DesktopWithoutDates[], order: string[]): boolean => {
   if (list.length !== order.length) {

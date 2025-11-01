@@ -82,7 +82,6 @@ export function FolderWindow({
   canDropExternal: boolean;
   onExternalDrop: () => void;
   onClose: () => void;
-  onMinimize: () => void;
   onBringToFront: () => void;
   onRemoveApp: (appId: string) => void;
   onAppClick: (app: AppIcon) => void;
