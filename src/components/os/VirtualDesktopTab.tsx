@@ -13,11 +13,11 @@ import {
 import { authedHono } from "@/lib/hono-client";
 import type { DesktopStateType } from "@/server/schemas/desktop.schema";
 import { backgroundOptions } from "./BackgroundImage";
+import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 import Desktop from "./Desktop";
 import VirtualDesktopDialog from "./dialog/VirtualDesktopDialog";
 import { TabContextMenu } from "./TabContextMenu";
 import type { CurrentUserType } from "./types";
-import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 
 export type DesktopWithoutDates = Omit<
   DesktopStateType,

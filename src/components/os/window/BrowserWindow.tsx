@@ -20,7 +20,6 @@ const SNAP_PADDING = 24;
 type BrowserWindowProps = {
   window: BrowserWindowType;
   onClose: () => void;
-  onMinimize: () => void;
   onBringToFront: () => void;
   onPositionChange: (position: { x: number; y: number }) => void;
   onSizeChange: (size: { width: number; height: number }) => void;

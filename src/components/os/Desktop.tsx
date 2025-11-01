@@ -62,29 +62,6 @@ import {
 } from "../ui/tooltip";
 import { backgroundOptions } from "./BackgroundImage";
 import { ContextMenu } from "./ContextMenu";
-import { DraggableMenu } from "./DraggableMenu";
-import CreateAppDialog from "./dialog/CreateAppDialog";
-import DefaultDialog, { DEFAULT_DIALOG_COLORS } from "./dialog/DefaultDialog";
-import EditStampDialog from "./dialog/EditStampDialog";
-import StampDialog, { stampOptions } from "./dialog/SelectStampDialog";
-import { checkUrlExists } from "./functions/checkUrlExist";
-import { lightDegreeLocalStore } from "./functions/lightDegreeLocalStorage";
-import { UserIcon } from "./UserIcon";
-import { BrowserWindow } from "./window/BrowserWindow";
-import { FolderWindow } from "./window/FolderWindow";
-import { HelpWindow } from "./window/HelpWindow";
-import { MemoWindow } from "./window/MemoWindow";
-import {
-  cloneAppPositions,
-  cloneApps,
-  cloneFolderContents,
-  createFolderContentsMap,
-  mapAppIconToDesktopApp,
-  mapDesktopAppToAppIcon,
-  mapEntriesToJson,
-  resolveAppColorStyles,
-  type DesktopApp,
-} from "./functions/desktop-utils";
 import {
   DESKTOP_FRAME_RADIUS,
   FRAME_OVERLAY_COLOR,
@@ -94,6 +71,29 @@ import {
   PINNED_DESKTOP_PADDING,
   PINNED_PANEL_WIDTH,
 } from "./constants/desktop";
+import { DraggableMenu } from "./DraggableMenu";
+import CreateAppDialog from "./dialog/CreateAppDialog";
+import DefaultDialog, { DEFAULT_DIALOG_COLORS } from "./dialog/DefaultDialog";
+import EditStampDialog from "./dialog/EditStampDialog";
+import StampDialog, { stampOptions } from "./dialog/SelectStampDialog";
+import { checkUrlExists } from "./functions/checkUrlExist";
+import {
+  cloneAppPositions,
+  cloneApps,
+  cloneFolderContents,
+  createFolderContentsMap,
+  type DesktopApp,
+  mapAppIconToDesktopApp,
+  mapDesktopAppToAppIcon,
+  mapEntriesToJson,
+  resolveAppColorStyles,
+} from "./functions/desktop-utils";
+import { lightDegreeLocalStore } from "./functions/lightDegreeLocalStorage";
+import { UserIcon } from "./UserIcon";
+import { BrowserWindow } from "./window/BrowserWindow";
+import { FolderWindow } from "./window/FolderWindow";
+import { HelpWindow } from "./window/HelpWindow";
+import { MemoWindow } from "./window/MemoWindow";
 
 type DesktopWithoutDates = Omit<DesktopStateType, "createdAt" | "updatedAt">;
 
@@ -151,12 +151,7 @@ export default function MacosDesktop({
   const [browserWindows, setBrowserWindows] = useState<BrowserWindowType[]>([]);
   const [folderWindows, setFolderWindows] = useState<FolderWindowType[]>([]);
   const openFolderIds = useMemo(
-    () =>
-      new Set(
-        folderWindows
-          .filter((window) => !window.isMinimized)
-          .map((window) => window.id),
-      ),
+    () => new Set(folderWindows.map((window) => window.id)),
     [folderWindows],
   );
   const panelOffsetRight = isPanelPinned ? PINNED_PANEL_WIDTH : 0;
@@ -321,7 +316,6 @@ export default function MacosDesktop({
     content: "welcome",
     position: { x: 150, y: 150 },
     size: { width: 650, height: 450 },
-    isMinimized: false,
     zIndex: nextzIndex + 1000,
   });
 
@@ -1610,7 +1604,6 @@ export default function MacosDesktop({
           w.id === memoApp.id
             ? {
                 ...w,
-                isMinimized: false,
                 zIndex: nextzIndex,
                 color: memoApp.color,
               }
@@ -1629,7 +1622,6 @@ export default function MacosDesktop({
           y: 100 + memoWindows.length * 30,
         },
         size: { width: 600, height: 400 },
-        isMinimized: false,
         zIndex: nextzIndex,
         color: memoApp.color,
       };
@@ -1651,7 +1643,6 @@ export default function MacosDesktop({
           w.id === app.id
             ? {
                 ...w,
-                isMinimized: false,
                 zIndex: nextzIndex,
                 color: app.color,
               }
@@ -1671,7 +1662,6 @@ export default function MacosDesktop({
           y: 80 + browserWindows.length * 30,
         },
         size: { width: 1000, height: 700 },
-        isMinimized: false,
         zIndex: nextzIndex,
         color: app.color,
       };
@@ -1691,7 +1681,6 @@ export default function MacosDesktop({
           w.id === folderApp.id
             ? {
                 ...w,
-                isMinimized: false,
                 zIndex: nextzIndex,
                 color: folderApp.color,
               }
@@ -1709,7 +1698,6 @@ export default function MacosDesktop({
           y: 120 + folderWindows.length * 30,
         },
         size: { width: 800, height: 600 },
-        isMinimized: false,
         zIndex: nextzIndex,
         color: folderApp.color,
       };
@@ -1831,18 +1819,6 @@ export default function MacosDesktop({
 
   const closeFolderWindow = (windowId: string) => {
     setFolderWindows((prev) => prev.filter((w) => w.id !== windowId));
-  };
-
-  const minimizeBrowserWindow = (windowId: string) => {
-    setBrowserWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, isMinimized: true } : w)),
-    );
-  };
-
-  const minimizeFolderWindow = (windowId: string) => {
-    setFolderWindows((prev) =>
-      prev.map((w) => (w.id === windowId ? { ...w, isMinimized: true } : w)),
-    );
   };
 
   const bringHelpWindowToFront = () => {
@@ -2359,7 +2335,6 @@ export default function MacosDesktop({
                   visible: false,
                 }))
               }
-              // onMinimize={}
               onBringToFront={() => {
                 bringHelpWindowToFront();
               }}
@@ -2379,148 +2354,137 @@ export default function MacosDesktop({
           )}
 
           {/* Memo Windows */}
-          {memoWindows.map(
-            (window) =>
-              !window.isMinimized && (
-                <MemoWindow
-                  key={window.id}
-                  window={window}
-                  isEditable={isEdit}
-                  currentFont={font}
-                  getFontStyle={getFontStyle}
-                  onClose={() => closeMemoWindow(window.id)}
-                  onContentChange={(content) =>
-                    updateMemoContent(window.id, content)
-                  }
-                  onBringToFront={() => bringMemoToFront(window.id)}
-                  onPositionChange={(position) => {
-                    setMemoWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              position,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  onSizeChange={(size) => {
-                    setMemoWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              size,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                />
-              ),
-          )}
+          {memoWindows.map((window) => (
+            <MemoWindow
+              key={window.id}
+              window={window}
+              isEditable={isEdit}
+              currentFont={font}
+              getFontStyle={getFontStyle}
+              onClose={() => closeMemoWindow(window.id)}
+              onContentChange={(content) =>
+                updateMemoContent(window.id, content)
+              }
+              onBringToFront={() => bringMemoToFront(window.id)}
+              onPositionChange={(position) => {
+                setMemoWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          position,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              onSizeChange={(size) => {
+                setMemoWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          size,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+            />
+          ))}
 
           {/* Browser Windows */}
-          {browserWindows.map(
-            (window) =>
-              !window.isMinimized && (
-                <BrowserWindow
-                  key={window.id}
-                  window={window}
-                  currentFont={font}
-                  getFontStyle={getFontStyle}
-                  onClose={() => closeBrowserWindow(window.id)}
-                  onMinimize={() => minimizeBrowserWindow(window.id)}
-                  onBringToFront={() => bringBrowserToFront(window.id)}
-                  onPositionChange={(position) => {
-                    setBrowserWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              position,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  onSizeChange={(size) => {
-                    setBrowserWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              size,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                />
-              ),
-          )}
+          {browserWindows.map((window) => (
+            <BrowserWindow
+              key={window.id}
+              window={window}
+              currentFont={font}
+              getFontStyle={getFontStyle}
+              onClose={() => closeBrowserWindow(window.id)}
+              onBringToFront={() => bringBrowserToFront(window.id)}
+              onPositionChange={(position) => {
+                setBrowserWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          position,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              onSizeChange={(size) => {
+                setBrowserWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          size,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+            />
+          ))}
 
           {/* Folder Windows */}
-          {folderWindows.map(
-            (window) =>
-              !window.isMinimized && (
-                <FolderWindow
-                  key={window.id}
-                  window={window}
-                  currentFont={font}
-                  getFontStyle={getFontStyle}
-                  folderContents={folderContents.get(window.id) || []}
-                  allFolderContents={folderContents}
-                  apps={apps}
-                  desktopBackground={background}
-                  brightness={brightness}
-                  isEditable={isEdit}
-                  canDropExternal={canDropIntoFolderWindow}
-                  onExternalDrop={() => handleDropIntoFolderWindow(window.id)}
-                  onClose={() => closeFolderWindow(window.id)}
-                  onMinimize={() => minimizeFolderWindow(window.id)}
-                  onBringToFront={() => bringFolderToFront(window.id)}
-                  onRemoveApp={(appId) => removeFromFolder(window.id, appId)}
-                  onAppClick={handleAppClick}
-                  onAppContextMenu={handleFolderAppContextMenu}
-                  onEmptyAreaContextMenu={handleFolderEmptyAreaContextMenu}
-                  onAppDragStart={(e, appId) =>
-                    handleFolderItemDragStart(e, appId, window.id)
-                  }
-                  onAppDragEnd={handleDragEnd}
-                  onAppDrop={handleFolderItemReorderDrop}
-                  onDropIntoFolder={handleDropIntoNestedFolder}
-                  onPositionChange={(position) => {
-                    setFolderWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              position,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  onSizeChange={(size) => {
-                    setFolderWindows((prev) =>
-                      prev.map((w) =>
-                        w.id === window.id
-                          ? {
-                              ...w,
-                              size,
-                            }
-                          : w,
-                      ),
-                    );
-                  }}
-                  failedFavicons={failedFavicons}
-                  onFaviconError={markFaviconAsFailed}
-                  openFolderIds={openFolderIds}
-                />
-              ),
-          )}
+          {folderWindows.map((window) => (
+            <FolderWindow
+              key={window.id}
+              window={window}
+              currentFont={font}
+              getFontStyle={getFontStyle}
+              folderContents={folderContents.get(window.id) || []}
+              allFolderContents={folderContents}
+              apps={apps}
+              desktopBackground={background}
+              brightness={brightness}
+              isEditable={isEdit}
+              canDropExternal={canDropIntoFolderWindow}
+              onExternalDrop={() => handleDropIntoFolderWindow(window.id)}
+              onClose={() => closeFolderWindow(window.id)}
+              onBringToFront={() => bringFolderToFront(window.id)}
+              onRemoveApp={(appId) => removeFromFolder(window.id, appId)}
+              onAppClick={handleAppClick}
+              onAppContextMenu={handleFolderAppContextMenu}
+              onEmptyAreaContextMenu={handleFolderEmptyAreaContextMenu}
+              onAppDragStart={(e, appId) =>
+                handleFolderItemDragStart(e, appId, window.id)
+              }
+              onAppDragEnd={handleDragEnd}
+              onAppDrop={handleFolderItemReorderDrop}
+              onDropIntoFolder={handleDropIntoNestedFolder}
+              onPositionChange={(position) => {
+                setFolderWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          position,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              onSizeChange={(size) => {
+                setFolderWindows((prev) =>
+                  prev.map((w) =>
+                    w.id === window.id
+                      ? {
+                          ...w,
+                          size,
+                        }
+                      : w,
+                  ),
+                );
+              }}
+              failedFavicons={failedFavicons}
+              onFaviconError={markFaviconAsFailed}
+              openFolderIds={openFolderIds}
+            />
+          ))}
 
           {showDesktopSaveBtn && isEdit && (
             <div

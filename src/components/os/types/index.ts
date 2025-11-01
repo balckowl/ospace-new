@@ -46,7 +46,6 @@ export interface MemoWindowType {
   color: HexColor;
   position: { x: number; y: number };
   size: { width: number; height: number };
-  isMinimized: boolean;
   zIndex: number;
 }
 export interface HelpWindowType {
@@ -54,7 +53,6 @@ export interface HelpWindowType {
   content: string;
   position: { x: number; y: number };
   size: { width: number; height: number };
-  isMinimized: boolean;
   zIndex: number;
 }
 
@@ -66,7 +64,6 @@ export interface BrowserWindowType {
   color: HexColor;
   position: { x: number; y: number };
   size: { width: number; height: number };
-  isMinimized: boolean;
   zIndex: number;
 }
 
@@ -76,7 +73,6 @@ export interface FolderWindowType {
   color: HexColor;
   position: { x: number; y: number };
   size: { width: number; height: number };
-  isMinimized: boolean;
   zIndex: number;
 }
 

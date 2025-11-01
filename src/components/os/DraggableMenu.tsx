@@ -16,11 +16,11 @@ import type {
   FontOptionType,
 } from "@/server/schemas/desktop.schema";
 import { BackgroundSelector } from "./BackgroundSelector";
+import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 import { FontSelector } from "./FontSelector";
 import { HelpSelector } from "./HelpSelector";
 import { PublicSelector } from "./PublicSelector";
 import type { HelpWindowType } from "./types";
-import { PINNED_PANEL_WIDTH } from "./constants/desktop";
 
 const DRAG_MARGIN = 100;
 
