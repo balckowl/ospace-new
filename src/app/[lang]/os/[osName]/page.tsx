@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import MobileLockView from "@/components/os/MobileLockView";
 import VirtualDesktopTab from "@/components/os/VirtualDesktopTab";
 import { pubHono } from "@/lib/hono-client";
 
@@ -36,13 +37,18 @@ export default async function Page({ params }: Props) {
   const { desktopList, isEdit, currentUser } = data;
 
   return (
-    <div className="bg-white">
-      <VirtualDesktopTab
-        desktopList={desktopList}
-        osName={osName}
-        isEdit={isEdit}
-        currentUser={currentUser}
-      />
-    </div>
+    <>
+      <div className="block lg:hidden">
+        <MobileLockView isEdit={isEdit} />
+      </div>
+      <div className="bg-white hidden lg:block">
+        <VirtualDesktopTab
+          desktopList={desktopList}
+          osName={osName}
+          isEdit={isEdit}
+          currentUser={currentUser}
+        />
+      </div>
+    </>
   );
 }
