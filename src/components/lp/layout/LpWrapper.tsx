@@ -21,13 +21,12 @@ export default async function LpWrapper({ lang }: Props) {
   return (
     <Fragment>
       <Header>
-        <Button className="rounded-xl px-5 py-4 text-md" asChild>
+        <Button size="lg" className="rounded-xl px-5 py-4 text-md" asChild>
           <Link href={{ pathname: `/${lang}/login` }}>
             {getStarted} <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>
       </Header>
-      <div className="h-[calc(70px+30px)] bg-[#0B0C10]" />
       <Hero lang={lang} />
       <CoreFunctions lang={lang} />
       <Exprience lang={lang} />

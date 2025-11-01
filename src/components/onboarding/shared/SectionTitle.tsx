@@ -12,10 +12,10 @@ export default function SectionTitle({ title, desc, ex = false }: Props) {
   return (
     <div className="mt-2 mb-5 text-center">
       <h2
-        className={`mb-3 flex justify-center gap-1 font-bold text-3xl text-white ${chewy.className}`}
+        className={`mb-3 whitespace-pre-line flex justify-center gap-1 font-bold text-3xl text-white ${chewy.className}`}
       >
         {title}
-        {ex && <span className="block rotate-[10deg]">!</span>}
+        {ex && <span className="block rotate-10">!</span>}
       </h2>
       <p className="text-center text-sm text-white/50 uppercase tracking-[0.4em]">
         {desc}

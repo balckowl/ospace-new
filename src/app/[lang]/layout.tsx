@@ -1,8 +1,8 @@
-import "./globals.css";
+import { env } from "@/env";
+import "../globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { env } from "../env";
-import { cn } from "../lib/utils";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,27 +10,28 @@ export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: {
     default: "OSpace",
-    // biome-ignore lint/style/noUnusedTemplateLiteral: <explanation>
     template: `%s | OSpace`,
   },
   description: "Create your very own OS on the web.",
   openGraph: {
     title: {
       default: "OSpace",
-      // biome-ignore lint/style/noUnusedTemplateLiteral: <explanation>
       template: `%s | OSpace`,
     },
     description: "Create your very own OS on the web.",
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ lang: string }>;
 }) {
+  const { lang } = await params;
   return (
-    <html lang="en">
+    <html lang={lang}>
       <body className={cn(inter.className, "bg-black")}>{children}</body>
     </html>
   );

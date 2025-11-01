@@ -3,15 +3,18 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { FlagTriangleRight, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import type { InferOutput } from "valibot";
+import {
+  type InferOutput,
+  maxLength,
+  minLength,
+  object,
+  pipe,
+  regex,
+  string,
+} from "valibot";
 import { useTranslation } from "@/i18n/client";
 import { authedHono } from "@/lib/hono-client";
-import {
-  type osNameFormInput,
-  osNameInput,
-} from "@/server/schemas/desktop.schema";
 import Header from "../lp/layout/Header";
-import { StarryBackdrop } from "../lp/shared/StarryBackdrop";
 import { Button } from "../ui/button";
 import {
   Form,
@@ -39,9 +42,22 @@ export default function InputOsNameForm({
   const desc = t("inputName.desc");
   const placeholder = t("inputName.placeholder");
   const btn = t("inputName.btn");
+  const min = t("inputName.min");
+  const max = t("inputName.max");
+  const pattarn = t("inputName.pattarn");
+  const alreadyUse = t("inputName.already-use");
+
+  const osNameFormInput = object({
+    osName: pipe(
+      string(),
+      minLength(2, min),
+      maxLength(10, max),
+      regex(/^[a-z](?:[a-z-]*[a-z])?$/, pattarn),
+    ),
+  });
 
   const form = useForm<InferOutput<typeof osNameFormInput>>({
-    resolver: valibotResolver(osNameInput),
+    resolver: valibotResolver(osNameFormInput),
     defaultValues: {
       osName: "",
     },
@@ -60,14 +76,13 @@ export default function InputOsNameForm({
     }
 
     if (res.status === 409) {
-      form.setError("osName", { message: "すでに使わています。" });
+      form.setError("osName", { message: alreadyUse });
       return;
     }
   };
 
   return (
     <div>
-      <StarryBackdrop />
       <Header />
       <div className="flex min-h-[calc(100dvh-70px)] items-center justify-center bg-black px-4">
         <div className="w-full max-w-md">
@@ -85,7 +100,7 @@ export default function InputOsNameForm({
                           <Input
                             placeholder={placeholder}
                             {...field}
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus-visible:ring-[3px] focus-visible:ring-black"
+                            className="w-full bg-white"
                           />
                         </FormControl>
                         <FormMessage />
@@ -94,6 +109,7 @@ export default function InputOsNameForm({
                   />
                   <Button
                     type="submit"
+                    size="lg"
                     className="mx-auto flex items-center gap-2 rounded-xl font-medium text-lg text-white transition-all duration-200"
                     disabled={form.formState.isSubmitting}
                   >

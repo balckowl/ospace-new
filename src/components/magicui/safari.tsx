@@ -21,7 +21,6 @@ export function Safari({
   ...props
 }: SafariProps) {
   return (
-    // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
     <svg
       width={width}
       height={height}
@@ -30,6 +29,7 @@ export function Safari({
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
+      <title>safari</title>
       <g clipPath="url(#path0)">
         <path
           d="M0 52H1202V741C1202 747.627 1196.63 753 1190 753H12C5.37258 753 0 747.627 0 741V52Z"
@@ -77,7 +77,6 @@ export function Safari({
           className="mix-blend-luminosity"
         >
           <div className="flex h-full w-full items-center justify-center gap-2 text-[12px] font-medium text-[#A3A3A3] dark:text-[#737373]">
-            {/** biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
             <svg
               width="14"
               height="14"
@@ -85,6 +84,7 @@ export function Safari({
               fill="none"
               className="text-[#A3A3A3] dark:text-[#737373]"
             >
+              <title>url bar</title>
               <path
                 d="M566.269 32.0852H572.426C573.277 32.0852 573.696 31.6663 573.696 30.7395V25.9851C573.696 25.1472 573.353 24.7219 572.642 24.6521V23.0842C572.642 20.6721 571.036 19.5105 569.348 19.5105C567.659 19.5105 566.053 20.6721 566.053 23.0842V24.6711C565.393 24.7727 565 25.1917 565 25.9851V30.7395C565 31.6663 565.418 32.0852 566.269 32.0852ZM567.272 22.97C567.272 21.491 568.211 20.6785 569.348 20.6785C570.478 20.6785 571.423 21.491 571.423 22.97V24.6394L567.272 24.6458V22.97Z"
                 fill="currentColor"
@@ -169,7 +169,7 @@ export function Safari({
                 className="w-full object-cover"
                 style={{
                   height: "calc(100% + 30px)",
-                  transform: "translateY(-30px)",
+                  transform: "translateY(-5px)",
                 }}
                 src={videoSrc}
                 autoPlay

@@ -48,12 +48,12 @@ export default async function CoreFunctions({ lang }: Props) {
   const card4Desc = t("core_functions.turnSites.body");
 
   return (
-    <section className="relative bg-[#111827] px-[10px] pt-[50px] pb-[130px] md:pt-[120px] md:pb-[200px] ">
+    <section className="relative bg-[#111827] px-2.5 pt-[50px] pb-[130px] md:pt-[120px] md:pb-[200px] ">
       <Container>
         <SectionTitle title={title} desc={desc} />
         <div className="grid grid-cols-1 gap-5 md:grid-cols-6">
           <div className="relative h-[250px] overflow-hidden rounded-xl bg-black px-5 py-5 md:col-span-3">
-            <h3 className="mb-1 font-semibold text-lg text-white backdrop-blur-md md:text-xl">
+            <h3 className="mb-1 font-semibold text-lg tracking-wide text-white backdrop-blur-md md:text-xl">
               {card1Title}
             </h3>
             <p className="mb-2 text-[#5f5f5f] text-xs sm:mb-0 sm:text-sm">
@@ -71,7 +71,7 @@ export default async function CoreFunctions({ lang }: Props) {
               width={480}
               height={300}
               alt="hono"
-              className="-bottom-[150px] -right-[100px] absolute rotate-[2deg] rounded-xl"
+              className="-bottom-[150px] -right-[100px] absolute rotate-2 rounded-xl"
             />
           </div>
           <div className="relative h-[250px] overflow-hidden rounded-xl bg-black px-5 py-5 md:col-span-3">
@@ -122,9 +122,11 @@ export default async function CoreFunctions({ lang }: Props) {
             </p>
             <div className="flex h-[150px] items-center">
               <Marquee pauseOnHover className="[--duration:20s]">
-                {APPLIST.map((app, index) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                  <AppIconMock key={index} notifyIcon={app.name === "folder"}>
+                {APPLIST.map((app) => (
+                  <AppIconMock
+                    key={app.name}
+                    notifyIcon={app.name === "folder"}
+                  >
                     {app.type === "image" ? (
                       <Image src={app.icon} width={40} height={40} alt="icon" />
                     ) : (
