@@ -11,7 +11,7 @@ export default function SectionTitle({ title, desc }: Props) {
   return (
     <div className="mx-auto mb-8 max-w-3xl text-center md:mb-20">
       <h2
-        className={`${litteOne.className} font-bold text-2xl text-white sm:text-3xl md:text-4xl`}
+        className={`${litteOne.className} tracking-wide font-bold text-2xl text-white sm:text-3xl md:text-4xl`}
       >
         {title}
       </h2>

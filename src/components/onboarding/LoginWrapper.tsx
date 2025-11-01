@@ -2,13 +2,12 @@
 
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n/client";
 import { authClient } from "@/lib/auth-client";
 import Header from "../lp/layout/Header";
-import { StarryBackdrop } from "../lp/shared/StarryBackdrop";
+import LoginAgreement from "./LoginAgreement";
 import SectionTitle from "./shared/SectionTitle";
 
 type Props = {
@@ -20,7 +19,6 @@ export default function LoginWrapper({ lang }: Props) {
   const title = t("login.title");
   const desc = t("login.desc");
   const btn = t("login.btn");
-  // const agreement = t("login.agreement");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,15 +38,14 @@ export default function LoginWrapper({ lang }: Props) {
 
   return (
     <div className="bg-black">
-      <StarryBackdrop />
       <Header />
       <div className="flex min-h-[calc(100dvh-70px)] items-center justify-center px-4">
         <div>
-          <SectionTitle title={title} desc={desc} ex={true} />
+          <SectionTitle title={title} desc={desc} />
 
           <Button
             onClick={handleSubmit}
-            className="itmes-center relative z-20 mx-auto mb-5 flex w-full gap-3 rounded-xl"
+            className="itmes-center cursor-pointer relative z-20 mx-auto mb-5 flex w-full gap-3 rounded-xl"
             type="button"
             disabled={isSubmitting}
           >
@@ -59,24 +56,7 @@ export default function LoginWrapper({ lang }: Props) {
             )}
             {btn}
           </Button>
-
-          {lang === "en" && (
-            <p className="mx-auto max-w-[380px] text-balance px-10 text-center text-white text-white/50 text-xs leading-1 leading-[1.5] tracking-wide">
-              By continuing, you agree to{" "}
-              <Link href="/legal" className="underline underline-offset-1">
-                terms of service and privacy policy.
-              </Link>
-            </p>
-          )}
-          {lang === "ja" && (
-            <p className="mx-auto max-w-[380px] text-balance px-10 text-center text-white text-white/50 text-xs leading-1 leading-[1.5] tracking-wide">
-              続行すると、{" "}
-              <Link href="/legal" className="underline underline-offset-1">
-                利用規約とプライバシーポリシー
-              </Link>
-              に同意したことになります。
-            </p>
-          )}
+          <LoginAgreement lang={lang} />
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 {
   "get_started": "Get Started",
   "hero": {
-    "title": "Launch your very own planet into<br/> the universe of OSPACE."
+    "title": "Launch your very own planet into<1/> the <0>universe</0> of OSPACE."
   },
   "core_functions": {
     "title": "Core Functions",
@@ -36,13 +36,17 @@
     "title": "Welcome",
     "desc": "Let's open the door to OSPACE",
     "btn": "Continue with Google",
-    "agreement": "By continuing, you agree to OSPACE’s terms of service and privacy policy."
+    "agreement": "By continuing, you agree to <0>terms of service and privacy policy.</0>"
   },
   "inputName": {
     "title": "Name your planet",
     "desc": "Plant your flag on a new world.",
     "placeholder": "My planet is called...",
-    "btn": "Confirm"
+    "btn": "Confirm",
+    "min": "Please enter at least 2 characters.",
+    "max": "Please enter 10 characters or fewer.",
+    "pattarn": "Only lowercase letters and hyphens are allowed. The value must start and end with a lowercase letter.",
+    "already-use": "It’s already in use."
   },
   "createSuccess": {
     "title": "Your planet \"{{osName}}\" is born",

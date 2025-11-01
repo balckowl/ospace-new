@@ -33,7 +33,10 @@ export default function CreateSuccess({ osName, lang }: Props) {
               <SectionTitle title={title} desc={desc} />
 
               {/* Go to OS Button */}
-              <Button className="mx-auto flex items-center gap-2 rounded-xl font-medium text-lg text-white transition-all duration-200">
+              <Button
+                size="lg"
+                className="mx-auto flex items-center gap-2 rounded-xl font-medium text-lg text-white transition-all duration-200"
+              >
                 <Link
                   href={`/os/${encodeURIComponent(osName)}` as Route}
                   className="flex items-center gap-2"

@@ -229,7 +229,7 @@ export const osNameFormInput = v.object({
     v.minLength(2, "3文字以上にしてください"),
     v.maxLength(10, "20文字以下にしてください"),
     v.regex(
-      /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
+      /^[a-z](?:[a-z-]*[a-z])?$/,
       "小文字英数とハイフンのみ。先頭末尾は英数。",
     ),
   ),

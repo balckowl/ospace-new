@@ -29,7 +29,7 @@ export default async function Recommend({ lang }: Props) {
             <p className="mb-8 text-gray-400 text-xs uppercase tracking-[0.4em] md:text-sm">
               {desc}
             </p>
-            <Button className="rounded-xl" asChild>
+            <Button size="lg" className="rounded-xl" asChild>
               <Link href="/login">
                 {getStarted} <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import LpWrapper from "../../components/lp/layout/LpWrapper";
@@ -19,7 +20,7 @@ export default async function Page({ params }: Props) {
   }
 
   if (!session.user.osName) {
-    redirect("/enter/callback/welcome" as any);
+    redirect("/enter/callback/welcome" as Route);
   }
-  redirect(`/os/${session.user.osName}` as any);
+  redirect(`/os/${session.user.osName}` as Route);
 }
