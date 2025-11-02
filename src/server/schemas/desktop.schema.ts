@@ -199,7 +199,7 @@ export const AppLayoutSchema = v.pipe(
 export const DesktopSchema = v.object({
   id: v.string(),
   state: AppLayoutSchema,
-  name: v.pipe(v.string(), v.minLength(4), v.maxLength(15)),
+  name: v.pipe(v.string(), v.minLength(2), v.maxLength(15)),
   isPublic: v.boolean(),
   background: BackgroundOption,
   font: FontOption,
