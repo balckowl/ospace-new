@@ -32,11 +32,11 @@ export const desktopPublicRoutes = new Hono<Env>().get(
 
     /*desktopのuserと認証userが一致していたら編集可能*/
     const isEdit = c.var.session?.user.id === u.id;
-
     /*isEdit なら全件、そうでなければ isPublic のみ*/
+    const withOutUserId = u.desktops.map(({ userId, ...rest }) => rest);
     const visibleDesktops = isEdit
-      ? u.desktops
-      : u.desktops.filter((d) => d.isPublic);
+      ? withOutUserId
+      : withOutUserId.filter((d) => d.isPublic);
 
     if (visibleDesktops.length === 0) {
       return c.json({ message: "デスクトップがありません。" }, 404);

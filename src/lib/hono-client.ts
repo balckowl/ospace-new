@@ -1,7 +1,7 @@
-//lib/hono.ts
-
 import { hc } from "hono/client";
+import { env } from "@/env";
 import type { authed, pub } from "@/server/hono";
 
-export const pubHono = hc<typeof pub>("http://localhost:3000");
-export const authedHono = hc<typeof authed>("http://localhost:3000");
+const url = env.NEXT_PUBLIC_APP_URL;
+export const pubHono = hc<typeof pub>(url);
+export const authedHono = hc<typeof authed>(url);

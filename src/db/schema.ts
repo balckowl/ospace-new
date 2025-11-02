@@ -71,7 +71,7 @@ export const desktop = sqliteTable(
     check(
       "desktop_state_shape",
       sql`
-      json_type(${t.state}, '$.apps') = 'array' AND
+      json_type(${t.state}, '$.appItems') = 'array' AND
       json_type(${t.state}, '$.appPositions') = 'object' AND
       json_type(${t.state}, '$.folderContents') = 'object'
     `,
