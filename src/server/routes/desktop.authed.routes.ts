@@ -82,7 +82,8 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
             eq(desktop.id, desktopId),
             eq(desktop.userId, c.var.session.user.id),
           ),
-        );
+        )
+        .returning();
 
       revalidateTag("desktop");
 
@@ -113,6 +114,15 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
     const { name } = c.req.valid("json");
 
     const row = await dbClient.transaction(async (tx) => {
+      const [{ cnt }] = await tx
+        .select({ cnt: sql<number>`count(*)` })
+        .from(desktop)
+        .where(eq(desktop.userId, c.var.session.user.id));
+
+      if (cnt >= 4) {
+        throw Error("デスクトップは4つしか作れません。");
+      }
+
       const [maxRow] = await tx
         .select({
           maxOrder: sql<number>`max(${desktop.orderIndex})`,
@@ -148,7 +158,9 @@ export const desktopAuthedRoutes = new Hono<AuthedEnv>()
         })
         .returning();
 
-      return rows[0];
+      const { userId: _omit, ...rowWithoutUserId } = rows[0];
+
+      return rowWithoutUserId;
     });
 
     revalidateTag("desktop");

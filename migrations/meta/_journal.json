@@ -43,6 +43,13 @@
       "when": 1761877393831,
       "tag": "0005_left_ink",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1762043415616,
+      "tag": "0006_nosy_loki",
+      "breakpoints": true
     }
   ]
 }

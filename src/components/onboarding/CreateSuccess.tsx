@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n/client";
 import Header from "../lp/layout/Header";
-import { StarryBackdrop } from "../lp/shared/StarryBackdrop";
 import SectionTitle from "./shared/SectionTitle";
 
 type Props = {
@@ -23,7 +22,6 @@ export default function CreateSuccess({ osName, lang }: Props) {
   return (
     <div>
       <Header />
-      <StarryBackdrop />
       <div className="flex min-h-[calc(100dvh-70px)] items-center justify-center bg-black px-4">
         <div className="w-full max-w-md">
           {/* Welcome Card with Icon Extending Beyond */}

@@ -1,4 +1,4 @@
-import { pipe, string, url } from "valibot";
+import { literal, pipe, string, union, url } from "valibot";
 import { createEnv } from "valibot-env";
 
 export const env = createEnv({
@@ -11,6 +11,7 @@ export const env = createEnv({
       GOOGLE_CLIENT_ID: string(),
       GOOGLE_CLIENT_SECRET: string(),
       BETTER_AUTH_URL: pipe(string(), url()),
+      Flag: union([literal("dev"), literal("staging"), literal("prod")]),
     },
     public: {
       NEXT_PUBLIC_APP_URL: pipe(string(), url()),
@@ -24,5 +25,6 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    Flag: process.env.Flag,
   },
 });
